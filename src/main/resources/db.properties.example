@@ -1,0 +1,10 @@
+# Database configuration for Karuru Flea Market
+# Copy this file to db.properties and adjust for your environment
+# db.properties is loaded from classpath (src/main/resources/)
+
+db.url=jdbc:mysql://localhost:3306/karuru_db
+db.user=root
+db.password=
+
+# If MySQL has a password, set it:
+# db.password=your_password

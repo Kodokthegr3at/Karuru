@@ -85,33 +85,33 @@ git clone https://github.com/your-username/karuru.git
 
 -Eclipseでインポート
 ```bash
-「File」→「Import」
+1. 「File」→「Import」
 
-「Existing Projects into Workspace」を選択
+2. 「Existing Projects into Workspace」を選択
 
-クローンしたフォルダを指定
+3. クローンしたフォルダを指定
 ```
 -Tomcat 9の設定
 ```bash
-「Window」→「Preferences」→「Server」→「Runtime Environments」
+1. 「Window」→「Preferences」→「Server」→「Runtime Environments」
 
-「Add」→「Apache Tomcat v9.0」を選択
+2. 「Add」→「Apache Tomcat v9.0」を選択
 
-Tomcatのインストール先を指定
+3. Tomcatのインストール先を指定
 
-サーバーにプロジェクトを追加
+4. サーバーにプロジェクトを追加
 
-「Servers」タブで右クリック → 「New」→「Server」
+5. 「Servers」タブで右クリック → 「New」→「Server」
 ```
 -Tomcat 9を選択
 ```bash
-「Karuru」を追加
+1. 「Karuru」を追加
 
-実行
+2. 実行
 
-サーバーを右クリック → 「Start」
+3. サーバーを右クリック → 「Start」
 
-またはプロジェクトを右クリック → 「Run on Server」
+4. またはプロジェクトを右クリック → 「Run on Server」
 ```
 ---
 ## 🌐 アクセス

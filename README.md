@@ -4,6 +4,7 @@
 > Servlet・JSP・JDBC・WebSocketで構築されたフリマアプリケーションです。
 
 ---
+<img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation (2)" src="https://github.com/user-attachments/assets/aaf1e0da-385d-44ac-998f-27e603267763" />
 
 ## 🇯🇵 日本語
 
@@ -14,6 +15,7 @@
 シニアエンジニアの視点から見ると、これは「フレームワークの抽象化に頼らずに Web の基礎（Servlet ライフサイクル、フィルタチェーン、セッション管理、JDBC コネクション管理）を理解しているか」を試す、教育的価値の高い実装と言えます。同時に、本番運用を見据えた場合に改善すべき点（後述）もいくつか見受けられます。
 
 ### 2. 技術スタック
+<img width="1920" height="1080" alt="01" src="https://github.com/user-attachments/assets/f5e40046-e173-4e65-a605-8e322bcc203e" />
 
 | レイヤー | 技術 |
 |---|---|
@@ -141,6 +143,7 @@ Karuru/
 From a senior engineer's perspective, this is a solid demonstration of understanding web fundamentals without leaning on framework abstractions — the servlet lifecycle, filter chains, session-scoped access control, and manual JDBC connection management are all hand-rolled. That said, there are a few things worth flagging before this goes anywhere near production (see Section 6).
 
 ### 2. Tech Stack
+<img width="1920" height="1080" alt="01" src="https://github.com/user-attachments/assets/f5e40046-e173-4e65-a605-8e322bcc203e" />
 
 | Layer | Technology |
 |---|---|

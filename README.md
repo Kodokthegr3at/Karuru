@@ -4,6 +4,10 @@
 > フレームワークやビルドツールに頼らず、Servlet・JSP・JDBC・WebSocket のみで構築されたフリマアプリケーションです。
 
 ---
+<img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation (2)" src="https://github.com/user-attachments/assets/37c40d91-60e3-4aeb-b392-0d59db0725d0" />
+<img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation" src="https://github.com/user-attachments/assets/d59ee363-4e0f-44e9-b83f-ea90712a977b" />
+
+
 
 ## 🇯🇵 日本語
 

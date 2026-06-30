@@ -1,12 +1,9 @@
 # Karuru (カルル) — Flea Market Web Application
 
-> A Java EE (Jakarta Servlet) flea-market / classifieds platform built with raw Servlets, JSP, JDBC and WebSockets — no framework, no build tool, just the platform APIs.
-> フレームワークやビルドツールに頼らず、Servlet・JSP・JDBC・WebSocket のみで構築されたフリマアプリケーションです。
+> A Java EE (Jakarta Servlet) flea-market / classifieds platform built with raw Servlets, JSP, JDBC and WebSockets.
+> Servlet・JSP・JDBC・WebSocketで構築されたフリマアプリケーションです。
 
 ---
-<img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation (2)" src="https://github.com/user-attachments/assets/37c40d91-60e3-4aeb-b392-0d59db0725d0" />
-
-
 
 ## 🇯🇵 日本語
 
@@ -16,9 +13,6 @@
 
 シニアエンジニアの視点から見ると、これは「フレームワークの抽象化に頼らずに Web の基礎（Servlet ライフサイクル、フィルタチェーン、セッション管理、JDBC コネクション管理）を理解しているか」を試す、教育的価値の高い実装と言えます。同時に、本番運用を見据えた場合に改善すべき点（後述）もいくつか見受けられます。
 
-<img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation" src="https://github.com/user-attachments/assets/d59ee363-4e0f-44e9-b83f-ea90712a977b" />
-
-
 ### 2. 技術スタック
 
 | レイヤー | 技術 |
@@ -26,11 +20,12 @@
 | 言語 | Java 17 |
 | Web層 | Jakarta Servlet 4.0, JSP, JSTL |
 | リアルタイム通信 | Java WebSocket (`javax.websocket` ベースの `MessageWebSocket` / `NotificationWebSocket`) |
-| データアクセス | JDBC（MySQL Connector/J、`DriverManager` ベースの自前コネクション管理） |
+| 認証/パスワード管理 | **BCrypt**（`org.mindrot.jbcrypt`、`PasswordUtils` 経由、cost factor = 12）+ セッションベース認証 + `SessionFilter` によるアクセス制御 + メール認証（Gmail SMTP） |
+| データアクセス | **JDBC**（MySQL Connector/J、`java.sql.DriverManager` ベースの自前コネクション管理、全34Servletで `PreparedStatement` を徹底使用） |
 | データベース | MySQL（`karuru_db`） |
-| フロントエンド | JSP + バニラ JavaScript + CSS（35%）、Chart.js（管理画面の分析グラフ） |
+| フロントエンド | JSP + **Bootstrap 5.3.2**（CDN経由、`includes/header.jsp` で全画面共通読み込み）+ Bootstrap Icons + バニラ JavaScript（画面ごとの `*.js`）、Chart.js（管理画面の分析グラフ） |
 | ビルド／デプロイ | Eclipse WTP（`.project` / `.classpath`）→ Tomcat 9 へ WAR デプロイ。Maven/Gradle は未使用 |
-| 認証 | セッションベース認証 + `SessionFilter` によるアクセス制御 + メール認証（Gmail SMTP） |
+
 
 ### 3. アーキテクチャ
 
@@ -111,8 +106,8 @@ cp src/main/resources/db.properties.example src/main/resources/db.properties
 公開リポジトリのコードを読んだ上で、本番運用前に必ず対応すべき点を率直に共有します：
 
 1. **`EmailConfig.java` にGmailのアプリパスワードがハードコードされてリポジトリにコミットされています。** これは重大なセキュリティリスクです。直ちに当該パスワードを無効化・再発行し、環境変数または `db.properties` と同様に `.gitignore` 対象の設定ファイルに移すべきです。
-2. パスワードハッシュ化は `PasswordUtils` クラスで行われているようですが、アルゴリズムの強度（bcrypt/argon2等の採用有無）は実装を直接確認することを推奨します。
-3. JDBCの生クエリを使っている箇所がある場合、SQLインジェクション対策として `PreparedStatement` の徹底利用を確認してください。
+2. パスワードは `PasswordUtils`（`org.mindrot.jbcrypt`、cost factor = 12）で **BCryptハッシュ化**されており、平文保存やMD5/SHA等の高速ハッシュは使われていません。この点は適切に実装されています。
+3. SQLインジェクション対策として、確認できた範囲（全34 Servlet）では `PreparedStatement` が一貫して使用されており、生の `Statement`／文字列連結クエリは見つかりませんでした。良好な実装です。
 4. `db.properties` のデフォルト値（`root` ユーザー・パスワード空欄）は開発用としては妥当ですが、本番デプロイ時に明示的な設定が強制されるような fail-fast 設計（環境変数必須化など）が望ましいです。
 
 ### 7. プロジェクト構成
@@ -144,8 +139,6 @@ Karuru/
 **Karuru** is a personal-project flea-market (classifieds/marketplace) web application. It covers the full surface area of a typical e-commerce platform — listings, purchases, rentals, price-offer negotiation, real-time messaging, notifications, an in-app wallet, and an admin dashboard — built entirely on the **raw Jakarta EE stack** (Servlet 4.0, JSP, JDBC, WebSocket). There is no framework (no Spring) and no build tool (no Maven/Gradle); it's structured as an Eclipse Dynamic Web Project deployed directly to Tomcat.
 
 From a senior engineer's perspective, this is a solid demonstration of understanding web fundamentals without leaning on framework abstractions — the servlet lifecycle, filter chains, session-scoped access control, and manual JDBC connection management are all hand-rolled. That said, there are a few things worth flagging before this goes anywhere near production (see Section 6).
-<img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation" src="https://github.com/user-attachments/assets/d59ee363-4e0f-44e9-b83f-ea90712a977b" />
-
 
 ### 2. Tech Stack
 
@@ -154,11 +147,12 @@ From a senior engineer's perspective, this is a solid demonstration of understan
 | Language | Java 17 |
 | Web layer | Jakarta Servlet 4.0, JSP, JSTL |
 | Real-time | Java WebSocket API (`MessageWebSocket`, `NotificationWebSocket`, coordinated via `WebSocketManager`) |
-| Data access | JDBC (MySQL Connector/J, manual `DriverManager`-based connection handling) |
+| Auth / password handling | **BCrypt** (`org.mindrot.jbcrypt`, via `PasswordUtils`, cost factor = 12), session-based authentication enforced by `SessionFilter`, and email verification over Gmail SMTP |
+| Data access | **JDBC** (MySQL Connector/J, manual `java.sql.DriverManager`-based connection handling, `PreparedStatement` used consistently across all 34 servlets) |
 | Database | MySQL (`karuru_db`) |
-| Frontend | JSP + vanilla JavaScript + CSS (~35% of codebase), Chart.js for admin analytics |
+| Frontend | JSP + **Bootstrap 5.3.2** (loaded via CDN in `includes/header.jsp`, shared across all pages) + Bootstrap Icons + page-specific vanilla JavaScript (`js/*.js`), Chart.js for admin analytics |
 | Build / Deploy | Eclipse WTP project (`.project` / `.classpath`) → deployed as a WAR to Tomcat 9. No Maven/Gradle. |
-| Auth | Session-based authentication, enforced by `SessionFilter`, plus email verification over Gmail SMTP |
+
 
 ### 3. Architecture
 
@@ -239,8 +233,8 @@ cp src/main/resources/db.properties.example src/main/resources/db.properties
 Having read through the public source, a few things should be addressed before any production deployment:
 
 1. **`EmailConfig.java` has a Gmail app password hardcoded and committed to the repository.** This is a real, exploitable secret leak. It should be revoked/rotated immediately and moved out to an environment variable or a git-ignored config file, consistent with how `db.properties` is already handled.
-2. Password hashing appears to live in `PasswordUtils` — worth confirming directly that it uses a slow, salted algorithm (bcrypt/argon2) rather than a fast general-purpose hash.
-3. Wherever raw JDBC queries are used, confirm `PreparedStatement` is used consistently to avoid SQL injection.
+2. Passwords are hashed with **BCrypt** via `PasswordUtils` (`org.mindrot.jbcrypt`, cost factor 12) — no plaintext storage, no fast general-purpose hashes like MD5/SHA. This is implemented correctly.
+3. SQL injection defenses look solid: across all 34 servlets, `PreparedStatement` is used consistently — no raw `Statement` or string-concatenated queries were found.
 4. The default `db.properties` fallback (root user, empty password) is reasonable for local dev, but production deploys would benefit from a fail-fast design that requires explicit configuration (e.g. via required environment variables) rather than silently falling back to insecure defaults.
 
 ### 7. Project Structure

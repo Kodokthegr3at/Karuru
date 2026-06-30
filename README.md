@@ -5,7 +5,6 @@
 
 ---
 <img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation (2)" src="https://github.com/user-attachments/assets/37c40d91-60e3-4aeb-b392-0d59db0725d0" />
-<img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation" src="https://github.com/user-attachments/assets/d59ee363-4e0f-44e9-b83f-ea90712a977b" />
 
 
 
@@ -16,6 +15,9 @@
 **Karuru** は個人開発のフリマ（フリーマーケット）プラットフォームです。出品・購入・レンタル・オファー（値引き交渉）・メッセージング・通知・ウォレット・管理者ダッシュボードまで、ECサイトとして必要な一通りの機能を **生の Jakarta EE スタック**（Servlet 4.0 / JSP / JDBC / WebSocket）だけで実装しているのが特徴です。Spring や Maven のようなフレームワーク／ビルドツールは使われておらず、Eclipse の Dynamic Web Project としてそのまま Tomcat にデプロイする構成になっています。
 
 シニアエンジニアの視点から見ると、これは「フレームワークの抽象化に頼らずに Web の基礎（Servlet ライフサイクル、フィルタチェーン、セッション管理、JDBC コネクション管理）を理解しているか」を試す、教育的価値の高い実装と言えます。同時に、本番運用を見据えた場合に改善すべき点（後述）もいくつか見受けられます。
+
+<img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation" src="https://github.com/user-attachments/assets/d59ee363-4e0f-44e9-b83f-ea90712a977b" />
+
 
 ### 2. 技術スタック
 
@@ -142,6 +144,8 @@ Karuru/
 **Karuru** is a personal-project flea-market (classifieds/marketplace) web application. It covers the full surface area of a typical e-commerce platform — listings, purchases, rentals, price-offer negotiation, real-time messaging, notifications, an in-app wallet, and an admin dashboard — built entirely on the **raw Jakarta EE stack** (Servlet 4.0, JSP, JDBC, WebSocket). There is no framework (no Spring) and no build tool (no Maven/Gradle); it's structured as an Eclipse Dynamic Web Project deployed directly to Tomcat.
 
 From a senior engineer's perspective, this is a solid demonstration of understanding web fundamentals without leaning on framework abstractions — the servlet lifecycle, filter chains, session-scoped access control, and manual JDBC connection management are all hand-rolled. That said, there are a few things worth flagging before this goes anywhere near production (see Section 6).
+<img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation" src="https://github.com/user-attachments/assets/d59ee363-4e0f-44e9-b83f-ea90712a977b" />
+
 
 ### 2. Tech Stack
 

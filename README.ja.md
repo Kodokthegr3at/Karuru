@@ -103,6 +103,10 @@ cp src/main/resources/email.properties.example src/main/resources/email.properti
 
 # 6. http://localhost:8085/KaruruFleaMarket を開く
 #    管理者にするには: 登録後に  UPDATE users SET role='admin' WHERE username='あなたのユーザー名';
+
+# 任意: デモ出品者30人による、リアルなデモ商品1,200件（各カテゴリ100件）
+python3 db/demo/generate_demo_data.py | mysql -u root -p karuru_db
+#    削除するには  DELETE FROM users WHERE email LIKE '%@demo.karuru.local';
 ```
 
 ### 6. セキュリティに関する注意

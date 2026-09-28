@@ -568,6 +568,27 @@ button.icon-link-btn {
     }
 }
 
+/* Phones hide the footer; its links live in the tab bar's menu sheets instead (includes/site-links.jspf). */
+@media (max-width: 991.98px) {
+    .site-footer {
+        display: none;
+    }
+}
+
+.sheet-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem 1rem;
+    padding: 0.75rem 1rem calc(1rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    font-size: 0.875rem;
+}
+
+.sheet-links a {
+    padding-block: 0.5rem;
+    color: var(--ink-muted);
+}
+
 .site-footer {
     margin-top: auto;
     background: var(--surface);

@@ -103,6 +103,10 @@ cp src/main/resources/email.properties.example src/main/resources/email.properti
 
 # 6. Open http://localhost:8085/KaruruFleaMarket
 #    To get an admin: register, then  UPDATE users SET role='admin' WHERE username='you';
+
+# Optional: 1,200 realistic demo listings (100 per category) from 30 demo sellers
+python3 db/demo/generate_demo_data.py | mysql -u root -p karuru_db
+#    remove again with  DELETE FROM users WHERE email LIKE '%@demo.karuru.local';
 ```
 
 ### 6. Security Notes

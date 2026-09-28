@@ -9,12 +9,7 @@
             <p class="site-footer-tagline">あなたの不要なものを、誰かの宝物に。</p>
         </div>
         <nav class="site-footer-links" aria-label="フッター">
-            <a href="${pageContext.request.contextPath}/about.jsp">カルルについて</a>
-            <a href="${pageContext.request.contextPath}/help.jsp">ヘルプ</a>
-            <a href="${pageContext.request.contextPath}/faq.jsp">よくある質問</a>
-            <a href="${pageContext.request.contextPath}/contact.jsp">お問い合わせ</a>
-            <a href="${pageContext.request.contextPath}/terms.jsp">利用規約</a>
-            <a href="${pageContext.request.contextPath}/privacy.jsp">プライバシーポリシー</a>
+            <%@ include file="site-links.jspf" %>
         </nav>
     </div>
     <div class="container site-footer-copy">&copy; <%= java.time.Year.now() %> カルル</div>

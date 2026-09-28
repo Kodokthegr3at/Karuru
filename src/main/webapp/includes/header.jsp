@@ -107,6 +107,9 @@
         <c:otherwise>
             <a class="tab-bar-item" href="${ctx}/rental.jsp" data-page="rental.jsp"><i class="bi bi-calendar"></i><span>レンタル</span></a>
             <a class="tab-bar-item" href="${ctx}/login.jsp" data-page="login.jsp register.jsp"><i class="bi bi-person"></i><span>ログイン</span></a>
+            <button class="tab-bar-item" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuSheet" aria-controls="menuSheet">
+                <i class="bi bi-three-dots"></i><span>その他</span>
+            </button>
         </c:otherwise>
     </c:choose>
 </nav>
@@ -122,6 +125,22 @@
             <li><a class="dropdown-item" href="${ctx}/favorites.jsp"><i class="bi bi-heart"></i>お気に入り</a></li>
             <%@ include file="account-menu.jspf" %>
         </ul>
+        <nav class="sheet-links" aria-label="ヘルプと規約">
+            <%@ include file="site-links.jspf" %>
+        </nav>
+    </div>
+</div>
+</c:if>
+<c:if test="${not signedIn}">
+<div class="offcanvas offcanvas-bottom account-sheet d-lg-none" tabindex="-1" id="menuSheet" aria-labelledby="menuSheetTitle">
+    <div class="offcanvas-header">
+        <h2 class="offcanvas-title h6" id="menuSheetTitle">その他</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="閉じる"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <nav class="sheet-links" aria-label="ヘルプと規約">
+            <%@ include file="site-links.jspf" %>
+        </nav>
     </div>
 </div>
 </c:if>

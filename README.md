@@ -1,15 +1,13 @@
-**Language:** [English](README.md) | [Bahasa Indonesia](README.id.md) | [日本語](README.ja.md)
-
 # Karuru (カルル) — Flea Market Web Application
 
-> A flea-market / classifieds web app built on plain Jakarta EE — raw Servlets, JSP, JDBC and WebSockets, no framework, built with Maven.
+> A flea-market / classifieds web app built on plain Java EE (`javax.*`) — raw Servlets, JSP, JDBC and WebSockets, no framework, built with Maven.
 
 ---
 <img width="1920" height="1080" alt="Blue and Beige Simple Project Proposal Presentation (2)" src="https://github.com/user-attachments/assets/aaf1e0da-385d-44ac-998f-27e603267763" />
 
 ### 1. Project Overview
 
-**Karuru** is a personal flea-market app — listings, purchases, rentals, price-offer negotiation, real-time chat, notifications, an in-app wallet, and an admin dashboard, all running on plain Jakarta EE (Servlet 4.0, JSP, JDBC, WebSocket). No Spring — a Maven WAR project deployed to Tomcat 9.
+**Karuru** is a personal flea-market app — listings, purchases, rentals, price-offer negotiation, real-time chat, notifications, an in-app wallet, and an admin dashboard, all running on plain Java EE (Servlet 4.0, JSP, JDBC, WebSocket). No Spring — a Maven WAR project deployed to Tomcat 9.
 
 Everything here is hand-rolled: the servlet lifecycle, filter chains, session-based access control, JDBC connection handling — none of it hides behind a framework. That also means a few things need fixing before this touches production; see the security notes below.
 
@@ -18,10 +16,10 @@ Everything here is hand-rolled: the servlet lifecycle, filter chains, session-ba
 | Layer | Technology |
 |---|---|
 | Language | Java 17 |
-| Web layer | Jakarta Servlet 4.0, JSP, JSTL |
+| Web layer | Java Servlet 4.0 (`javax.servlet`), JSP, JSTL |
 | Real-time | Java WebSocket API (`MessageWebSocket`, `NotificationWebSocket`, coordinated via `WebSocketManager`) |
 | Auth / password handling | **BCrypt** (`org.mindrot.jbcrypt`, via `PasswordUtils`, cost factor = 12), session-based authentication enforced by `SessionFilter`, and email verification over Gmail SMTP |
-| Data access | **JDBC** (MySQL Connector/J via the Tomcat JDBC connection pool, `PreparedStatement` used consistently across all 34 servlets) |
+| Data access | **JDBC** (MySQL Connector/J via the Tomcat JDBC connection pool, `PreparedStatement` for every query; shared queries live in `dao/`) |
 | Database | MySQL (`karuru_db`) |
 | Frontend | JSP + **Bootstrap 5.3.2** (loaded via CDN in `includes/header.jsp`, shared across all pages) + Bootstrap Icons + page-specific vanilla JavaScript (`js/*.js`), Chart.js for admin analytics |
 | Build / Deploy | Maven (`pom.xml`, wrapper `./mvnw`) → WAR deployed to Tomcat 9; imports into Eclipse via m2e. JUnit 5 tests. |
@@ -34,20 +32,21 @@ Browser
   │  HTTP / WebSocket
   ▼
 Filter Chain
-  ├─ FilterEncodingUTF8  … normalizes request encoding to UTF-8 across the board
-  └─ SessionFilter       … gatekeeps protected paths (/dashboard.jsp, /admin/*, etc.)
+  ├─ CsrfFilter      … rejects cross-origin POST/PUT/DELETE
+  └─ SessionFilter   … gatekeeps protected paths (/dashboard.jsp, /admin/*, etc.)
+  (UTF-8 request/response encoding is set in web.xml)
   │
   ▼
-Servlet Layer (34 servlets) ── one feature, one servlet — a deliberately flat mapping
+Servlet Layer (34 servlets) ── one feature, one servlet; JSON APIs extend ApiServlet
   ├─ Auth: Login / Register / Logout / ForgotPassword / ResetPassword / Verify
   ├─ Listings: Product / ProductDetails / CreateListing / Category / Search / Banner
   ├─ Commerce: Cart / Checkout / Order / Payment / Offer / Rental / Wallet
-  ├─ Social: Review / Messages / Notifications / Favorite / SavedSearches / SavedSellers / RecentlyViewed
-  ├─ User: Profile / SellerProfile / Settings / Garage / Activity
-  └─ Admin: Admin / Analytics / Users / HealthCheck
+  ├─ Social: Review / Messages / Notifications / Favorite / SavedSearches / RecentlyViewed
+  ├─ User: Profile / SellerProfile / Settings / Garage / Dashboard / Upload
+  └─ Admin: Admin (users, activity log, CRUD) / Analytics / HealthCheck
   │
   ▼
-util.DatabaseConnection ── Tomcat JDBC connection pool configured from db.properties
+dao/* + util.DatabaseConnection ── Tomcat JDBC connection pool configured from db.properties
   │
   ▼
 MySQL (karuru_db)
@@ -58,7 +57,7 @@ and pushes chat messages and notifications to connected clients in real time.
 ```
 
 A couple of notes on this setup:
-- **No front controller** — every URL gets its own servlet. Easy to follow, but things like auth checks and logging end up repeated across servlets instead of living in one place.
+- **No front controller** — every URL gets its own servlet. The JSON API servlets share `ApiServlet`, which maps `?action=` to a handler and does the login/admin check, DB connection and error response in one place.
 - `db.properties` itself is git-ignored; only `db.properties.example` is committed, which is the usual pattern for this kind of config.
 
 ### 4. Key Features
@@ -68,7 +67,7 @@ A couple of notes on this setup:
 - Cart → checkout → order → payment pipeline (`Cart` → `Checkout` → `Order` → `Payment`)
 - Rental transactions (`Rental`) and price-negotiation offers (`Offer`)
 - In-app wallet balance management (`Wallet`)
-- Favorites, saved searches, followed sellers, and recently-viewed history
+- Favorites, saved searches, and recently-viewed history
 - Reviews and ratings (`Review`)
 - Real-time messaging and notifications over WebSocket (`MessagesServlet` + `MessageWebSocket`, `NotificationsServlet` + `NotificationWebSocket`)
 - Seller and buyer profiles, account settings (`SellerProfile`, `Profile`, `Settings`)
@@ -120,7 +119,8 @@ cp src/main/resources/email.properties.example src/main/resources/email.properti
 ```
 Karuru/
 ├── src/main/java/
-│   ├── servlet/      … 34 feature-specific servlets
+│   ├── servlet/      … 34 feature-specific servlets + abstract ApiServlet base
+│   ├── dao/          … shared queries (orders, wallets, notifications, …)
 │   ├── websocket/     … WebSocket endpoints for messaging & notifications
 │   └── util/           … DB connection, password hashing, filters, email config
 ├── src/main/resources/

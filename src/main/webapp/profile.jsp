@@ -148,7 +148,7 @@
         <div class="row mb-4">
             <div class="col-12">
                 <h1 class="fw-bold mb-2">
-                    <i class="bi bi-person-circle me-2 text-warning"></i>プロフィール
+                    <i class="bi bi-person-circle me-2 text-primary"></i>プロフィール
                 </h1>
                 <p class="text-muted mb-0">プロフィール情報と設定を管理できます</p>
             </div>

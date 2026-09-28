@@ -55,8 +55,8 @@
 <main id="main" class="page-main py-4 rental-detail-page">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <h1 class="fw-bold mb-0 page-header">
-                <i class="bi bi-calendar-check me-2 text-warning"></i>レンタル詳細
+            <h1 class="fw-bold mb-0">
+                <i class="bi bi-calendar-check me-2 text-primary"></i>レンタル詳細
             </h1>
             <a href="${pageContext.request.contextPath}/rentals.jsp" class="btn btn-outline-primary">
                 <i class="bi bi-arrow-left me-2"></i>レンタル履歴に戻る

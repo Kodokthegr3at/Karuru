@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         data = await KaruruUtils.apiFetch(`${window.CONTEXT_PATH}/SellerProfileServlet?seller_id=${encodeURIComponent(sellerId)}`);
     } catch (error) {
-        profile.innerHTML = KaruruUtils.emptyState('bi-exclamation-circle', error.message);
+        profile.innerHTML = KaruruUtils.emptyState('bi-exclamation-circle', error.message, KaruruUtils.browseAction());
         return;
     }
     const seller = data.seller;

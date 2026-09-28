@@ -7,7 +7,7 @@ let product = null;
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('productDetail');
     if (!productId) {
-        container.innerHTML = KaruruUtils.emptyState('bi-question-circle', '商品が指定されていません');
+        container.innerHTML = KaruruUtils.emptyState('bi-question-circle', '商品が指定されていません', KaruruUtils.browseAction());
         return;
     }
     loadProduct(container);
@@ -25,7 +25,7 @@ async function loadProduct(container) {
     try {
         data = await KaruruUtils.apiFetch(`${window.CONTEXT_PATH}/ProductDetailsServlet?id=${encodeURIComponent(productId)}`);
     } catch (error) {
-        container.innerHTML = KaruruUtils.emptyState('bi-exclamation-circle', error.message);
+        container.innerHTML = KaruruUtils.emptyState('bi-exclamation-circle', error.message, KaruruUtils.browseAction());
         return;
     }
     product = data.product;

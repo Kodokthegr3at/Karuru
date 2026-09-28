@@ -98,8 +98,8 @@
     <div class="container">
         <div class="row mb-4">
             <div class="col-12">
-                <h1 class="fw-bold mb-2 page-header">
-                    <i class="bi bi-calendar-check me-2 text-warning"></i>レンタル履歴
+                <h1 class="fw-bold mb-2">
+                    <i class="bi bi-calendar-check me-2 text-primary"></i>レンタル履歴
                 </h1>
                 <p class="text-muted mb-0">あなたのレンタル予約と履歴を確認できます</p>
             </div>

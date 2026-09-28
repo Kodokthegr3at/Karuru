@@ -2,11 +2,11 @@
 <%@ include file="includes/header.jsp" %>
 <main id="main" class="page-main py-4 offers-page">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="fw-bold mb-0">
-                <i class="bi bi-hand-thumbs-up me-2 text-warning"></i>オファー管理
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <h1 class="fw-bold mb-0 text-nowrap">
+                <i class="bi bi-hand-thumbs-up me-2 text-primary"></i>オファー管理
             </h1>
-            <div class="btn-group" role="group">
+            <div class="btn-group offers-view-toggle" role="group">
                 <input type="radio" class="btn-check" name="offerView" id="viewReceived" value="received" checked>
                 <label class="btn btn-outline-primary" for="viewReceived">
                     <i class="bi bi-inbox me-2"></i>受信したオファー

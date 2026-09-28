@@ -351,7 +351,7 @@
         <div class="row mb-4">
             <div class="col-12">
                 <h1 class="fw-bold mb-2">
-                    <i class="bi bi-calendar-check me-2 text-warning"></i>レンタル予約
+                    <i class="bi bi-calendar-check me-2 text-primary"></i>レンタル予約
                 </h1>
                 <p class="text-muted mb-0">レンタル可能な商品を選択して予約してください</p>
             </div>

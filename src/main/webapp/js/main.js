@@ -292,9 +292,16 @@ KaruruUtils.orderSummary = function(order) {
         </section>`;
 };
 
-KaruruUtils.emptyState = function(icon, message) {
-    return `<div class="empty-state"><i class="bi ${icon}"></i><p>${escapeHtml(message)}</p></div>`;
+/** Icon + message, with an optional way forward: action = { href, label }. */
+KaruruUtils.emptyState = function(icon, message, action) {
+    const button = action
+        ? `<a class="btn btn-primary" href="${action.href}">${escapeHtml(action.label)}</a>`
+        : '';
+    return `<div class="empty-state"><i class="bi ${icon}"></i><p>${escapeHtml(message)}</p>${button}</div>`;
 };
+
+/** The usual way out of a page whose item no longer exists. */
+KaruruUtils.browseAction = () => ({ href: `${window.CONTEXT_PATH}/products.jsp`, label: '商品を探す' });
 
 // ---------------------------------------------------------------------------
 // Header badges

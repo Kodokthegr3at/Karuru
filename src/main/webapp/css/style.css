@@ -515,6 +515,23 @@ button.icon-link-btn {
     padding-bottom: env(safe-area-inset-bottom);
     background: var(--surface);
     border-top: 1px solid var(--line);
+    /* Hidden until the visitor deliberately scrolls for it; see KaruruTabBar in main.js. */
+    transform: translateY(100%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
+}
+
+.tab-bar.is-visible {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.25s ease, visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tab-bar,
+    .tab-bar.is-visible {
+        transition: none;
+    }
 }
 
 .tab-bar-item {
@@ -1973,4 +1990,109 @@ a.record-title:hover {
 
 .wallet-filter-group .btn {
     white-space: nowrap;
+}
+
+/* Admin dashboard ------------------------------------------------------------------------- */
+
+/* Surfaces shared by the admin page and the wallet (old class names kept by their markup) */
+.card-light {
+    background: var(--surface);
+}
+
+.card-header-light {
+    background: transparent;
+    border-bottom: 1px solid var(--line);
+}
+
+.admin-dashboard-page .card {
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius);
+    box-shadow: none !important;
+    overflow: hidden;
+}
+
+/* Five key figures: one row on laptops, two columns on phones with the odd one out spanning the row */
+.stat-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+@media (max-width: 575.98px) {
+    .stat-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stat-cards-grid > :last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+}
+
+.stat-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    height: 100%;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.stat-card-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: 1.15rem;
+}
+
+.stat-card-success .stat-card-icon { background: var(--success-soft); color: var(--success); }
+.stat-card-warning .stat-card-icon { background: var(--warning-soft); color: var(--warning); }
+.stat-card-offers .stat-card-icon  { background: var(--sticker); color: var(--sticker-ink); }
+
+.stat-card-content {
+    min-width: 0;
+}
+
+.stat-card-label {
+    margin: 0;
+    color: var(--ink-muted);
+    font-family: var(--bs-body-font-family);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.stat-card-value {
+    margin: 0.1rem 0;
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-card-change {
+    font-size: 0.75rem;
+}
+
+/* Tables scroll sideways on phones instead of breaking words into one-character lines */
+.admin-dashboard-page .table th,
+.admin-dashboard-page .table td {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* The activity log can hold hundreds of rows: cap its height and keep the header visible */
+#activityLogs .table-responsive {
+    max-height: 28rem;
+    overflow-y: auto;
+}
+
+#activityLogs thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--surface);
 }

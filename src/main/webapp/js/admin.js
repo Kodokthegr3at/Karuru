@@ -287,7 +287,7 @@ async function loadProducts() {
                     </table>
                 </div>
                 <div class="card-footer border-top p-3">
-                    <button class="btn btn-success" onclick="showProductModal()">
+                    <button class="btn btn-primary" onclick="showProductModal()">
                         <i class="bi bi-plus-circle me-2"></i>新しい商品を追加
                     </button>
                 </div>
@@ -297,7 +297,7 @@ async function loadProducts() {
                 <div class="text-center p-4 text-muted">
                     <i class="bi bi-box-seam" style="font-size: 3rem; opacity: 0.5;"></i>
                     <p class="mt-3 mb-0">商品が見つかりませんでした。</p>
-                    <button class="btn btn-success mt-3" onclick="showProductModal()">
+                    <button class="btn btn-primary mt-3" onclick="showProductModal()">
                         <i class="bi bi-plus-circle me-2"></i>最初の商品を追加
                     </button>
                 </div>
@@ -393,7 +393,7 @@ async function loadOrders() {
                     </table>
                 </div>
                 <div class="card-footer border-top p-3">
-                    <button class="btn btn-warning" onclick="showOrderModal()">
+                    <button class="btn btn-primary" onclick="showOrderModal()">
                         <i class="bi bi-plus-circle me-2"></i>新しい注文を追加
                     </button>
                 </div>
@@ -403,7 +403,7 @@ async function loadOrders() {
                 <div class="text-center p-4 text-muted">
                     <i class="bi bi-receipt" style="font-size: 3rem; opacity: 0.5;"></i>
                     <p class="mt-3 mb-0">注文が見つかりませんでした。</p>
-                    <button class="btn btn-warning mt-3" onclick="showOrderModal()">
+                    <button class="btn btn-primary mt-3" onclick="showOrderModal()">
                         <i class="bi bi-plus-circle me-2"></i>最初の注文を追加
                     </button>
                 </div>
@@ -516,7 +516,7 @@ async function loadOffers() {
                     </table>
                 </div>
                 <div class="card-footer border-top p-3">
-                    <a href="${window.CONTEXT_PATH}/offers.jsp" class="btn btn-warning">
+                    <a href="${window.CONTEXT_PATH}/offers.jsp" class="btn btn-primary">
                         <i class="bi bi-hand-thumbs-up me-2"></i>オファー管理ページへ
                     </a>
                 </div>
@@ -526,7 +526,7 @@ async function loadOffers() {
                 <div class="text-center p-4 text-muted">
                     <i class="bi bi-hand-thumbs-up" style="font-size: 3rem; opacity: 0.5;"></i>
                     <p class="mt-3 mb-0">オファーが見つかりませんでした。</p>
-                    <a href="${window.CONTEXT_PATH}/offers.jsp" class="btn btn-warning mt-3">
+                    <a href="${window.CONTEXT_PATH}/offers.jsp" class="btn btn-primary mt-3">
                         <i class="bi bi-hand-thumbs-up me-2"></i>オファー管理ページへ
                     </a>
                 </div>

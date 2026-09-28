@@ -10,8 +10,8 @@
         </div>
 
         <!-- Statistics Grid - 2x2 on mobile -->
-        <div class="row g-2 g-md-4 mb-4 stat-cards-grid">
-            <div class="col-6 col-xl-3">
+        <div class="stat-cards-grid mb-4">
+            <div>
                 <div class="stat-card stat-card-primary">
                     <div class="stat-card-icon">
                         <i class="bi bi-people-fill"></i>
@@ -25,7 +25,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-xl-3">
+            <div>
                 <div class="stat-card stat-card-success">
                     <div class="stat-card-icon">
                         <i class="bi bi-box-seam-fill"></i>
@@ -39,7 +39,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-xl-3">
+            <div>
                 <div class="stat-card stat-card-warning">
                     <div class="stat-card-icon">
                         <i class="bi bi-cart-check-fill"></i>
@@ -53,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-xl-3">
+            <div>
                 <div class="stat-card stat-card-info">
                     <div class="stat-card-icon">
                         <i class="bi bi-currency-yen"></i>
@@ -67,7 +67,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-xl-3">
+            <div>
                 <div class="stat-card stat-card-offers">
                     <div class="stat-card-icon">
                         <i class="bi bi-hand-thumbs-up"></i>

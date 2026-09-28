@@ -440,8 +440,80 @@ window.KaruruTheme = {
     }
 };
 
+/*
+ * Mobile tab bar: hidden by default so the page gets the whole screen. It only appears on a deliberate
+ * scroll: a clear upward scroll (UP_DISTANCE px in one go), or pulling past either end of the page, which
+ * also works on short pages that cannot scroll at all. Any downward scroll hides it again.
+ */
+window.KaruruTabBar = {
+    UP_DISTANCE: 80,
+    DOWN_DISTANCE: 12,
+    PULL_DISTANCE: 150,
+
+    init() {
+        this.bar = document.querySelector('.tab-bar');
+        if (!this.bar) return;
+        this.lastY = window.scrollY;
+        this.up = 0;
+        this.down = 0;
+
+        window.addEventListener('scroll', () => this.onScroll(), { passive: true });
+        window.addEventListener('wheel', event => this.onPull(event.deltaY), { passive: true });
+        let touchY = null;
+        window.addEventListener('touchstart', event => { touchY = event.touches[0].clientY; }, { passive: true });
+        window.addEventListener('touchmove', event => {
+            if (touchY === null) return;
+            const y = event.touches[0].clientY;
+            this.onPull(touchY - y);   // finger moving up = pulling the page down
+            touchY = y;
+        }, { passive: true });
+        // Keyboard users tabbing into the bar must be able to see it.
+        this.bar.addEventListener('focusin', () => this.show());
+    },
+
+    atBottom() {
+        return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+    },
+
+    onScroll() {
+        const y = window.scrollY;
+        const dy = y - this.lastY;
+        this.lastY = y;
+        if (dy > 0) {
+            this.up = 0;
+            this.down += dy;
+            if (this.down > this.DOWN_DISTANCE && !this.atBottom()) this.hide();
+        } else if (dy < 0) {
+            this.down = 0;
+            this.up -= dy;
+            if (this.up >= this.UP_DISTANCE) this.show();
+        }
+    },
+
+    /** A wheel or swipe at either end of the page, where the page itself can no longer move. */
+    onPull(deltaY) {
+        if ((deltaY > 0 && this.atBottom()) || (deltaY < 0 && window.scrollY <= 0)) {
+            this.pulled = (this.pulled || 0) + Math.abs(deltaY);
+            if (this.pulled >= this.PULL_DISTANCE) this.show();
+        } else {
+            this.pulled = 0;
+        }
+    },
+
+    show() {
+        this.bar.classList.add('is-visible');
+        this.pulled = 0;
+    },
+
+    hide() {
+        if (this.bar.contains(document.activeElement)) return;
+        this.bar.classList.remove('is-visible');
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     window.KaruruTheme.init();
+    window.KaruruTabBar.init();
     markActiveTab();
     if (window.currentUserId) {
         window.updateAllBadges();

@@ -1,4 +1,5 @@
 <%@ page pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%-- Account menu items; used by the desktop account dropdown and the mobile account sheet. --%>
 <li><a class="dropdown-item" href="${ctx}/profile.jsp"><i class="bi bi-person"></i>プロフィール</a></li>
 <li><a class="dropdown-item" href="${ctx}/dashboard.jsp"><i class="bi bi-speedometer2"></i>ダッシュボード</a></li>

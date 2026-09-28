@@ -115,7 +115,7 @@
                                 <input type="file" id="productImages" name="images" multiple accept="image/*" style="display: none;">
                                 <div class="upload-placeholder">
                                     <i class="bi bi-cloud-upload fs-1 text-muted"></i>
-                                    <p class="mt-2 mb-1">画像をドラッグ&ドロップまたはクリックしてアップロード</p>
+                                    <p class="mt-2 mb-1">画像をドラッグ&amp;ドロップまたはクリックしてアップロード</p>
                                     <small class="text-muted">最大10枚、各10MBまで（JPEG, PNG, GIF対応）</small>
                                 </div>
                             </div>

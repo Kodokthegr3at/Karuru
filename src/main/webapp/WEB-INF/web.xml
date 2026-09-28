@@ -11,6 +11,16 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
     
+    <!-- First: must decode the request as UTF-8 before any filter or servlet reads a parameter -->
+    <filter>
+        <filter-name>EncodingFilter</filter-name>
+        <filter-class>util.EncodingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>EncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <filter>
         <filter-name>CsrfFilter</filter-name>
         <filter-class>util.CsrfFilter</filter-class>

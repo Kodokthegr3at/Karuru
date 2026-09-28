@@ -1,5 +1,5 @@
 <%@ page pageEncoding="UTF-8" %>
-<%-- Help and legal links; used by the desktop footer and, on phones where the footer is hidden, by the menu sheets. --%>
+<%-- Help and legal links (there is no page footer): the header help menu on laptops, the tab bar sheets on phones. --%>
 <a href="${pageContext.request.contextPath}/about.jsp">カルルについて</a>
 <a href="${pageContext.request.contextPath}/help.jsp">ヘルプ</a>
 <a href="${pageContext.request.contextPath}/faq.jsp">よくある質問</a>

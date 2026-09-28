@@ -3,7 +3,7 @@
 <main id="main" class="messages-page py-4">
     <div class="container-fluid px-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h2 mb-0 fw-bold page-header">
+            <h1 class="h2 mb-0 fw-bold">
                 <i class="bi bi-chat-dots-fill me-2 text-primary"></i>メッセージ
             </h1>
         </div>
@@ -45,7 +45,7 @@
                         <div class="empty-icon mb-4">
                             <i class="bi bi-chat-left-heart-fill"></i>
                         </div>
-                        <h4 class="mt-4 mb-2 fw-bold page-header">会話を選択してください</h4>
+                        <h4 class="mt-4 mb-2 fw-bold">会話を選択してください</h4>
                         <p class="text-muted mb-0">
                             <span class="d-none d-md-inline">左側のリストから会話を選択してメッセージを開始</span>
                             <span class="d-md-none">上のリストから会話を選択してメッセージを開始</span>

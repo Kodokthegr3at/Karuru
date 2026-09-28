@@ -56,6 +56,14 @@
             <button class="icon-link-btn theme-toggle" type="button" data-theme-toggle aria-label="ダークモードに切り替え" title="ダークモードに切り替え">
                 <i class="bi bi-moon-stars" aria-hidden="true"></i>
             </button>
+            <div class="dropdown d-none d-lg-block">
+                <button class="icon-link-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="ヘルプと規約" title="ヘルプと規約">
+                    <i class="bi bi-question-circle" aria-hidden="true"></i>
+                </button>
+                <nav class="dropdown-menu dropdown-menu-end help-menu" aria-label="ヘルプと規約">
+                    <%@ include file="site-links.jspf" %>
+                </nav>
+            </div>
             <c:choose>
                 <c:when test="${signedIn}">
                     <a class="icon-link-btn d-none d-lg-inline-flex" href="${ctx}/favorites.jsp" aria-label="お気に入り">

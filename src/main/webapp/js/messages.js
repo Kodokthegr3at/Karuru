@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const safeName = escapeHtml(userName);
                 if (isMobile) {
                     titleEl.innerHTML = `
-                        <button class="btn btn-sm btn-outline-dark messages-back-btn me-2" onclick="closeConversation()" title="戻る">
+                        <button class="btn btn-sm btn-outline-secondary messages-back-btn me-2" onclick="closeConversation()" title="戻る">
                             <i class="bi bi-arrow-left"></i>
                         </button>
                         <div class="conversation-header-avatar me-2">
@@ -265,7 +265,7 @@ async function loadConversations() {
         // Only auto-select on initial load - skip if returning from product detail close (reset=1)
         const isInitialLoad = !currentConversationId && !window._messagesAutoSelectDone;
         const skipAutoSelect = window._skipAutoSelect === true;
-        if (!userIdToSelect && conversations.length > 0 && isInitialLoad && !skipAutoSelect) {
+        if (!userIdToSelect && conversations.length > 0 && isInitialLoad && !skipAutoSelect && window.innerWidth > 768) {
             window._messagesAutoSelectDone = true;
             const firstConv = conversations[0];
             userIdToSelect = firstConv.other_user_id ?? firstConv.user_id;
@@ -478,7 +478,7 @@ function selectConversation(userId, userName, productId = null, fromProductDetai
         const isMobile = window.innerWidth <= 768;
         if (isMobile) {
             titleEl.innerHTML = `
-                <button class="btn btn-sm btn-outline-dark messages-back-btn me-2" onclick="closeConversation()" title="戻る">
+                <button class="btn btn-sm btn-outline-secondary messages-back-btn me-2" onclick="closeConversation()" title="戻る">
                     <i class="bi bi-arrow-left"></i>
                 </button>
                 <div class="conversation-header-avatar me-2">
@@ -816,14 +816,7 @@ async function loadMessages(userId, productId = null) {
                     if (msg.product_id && !productInfoShown) {
                         try {
                             const productName = escapeHtml(msg.product_name || '商品');
-                            let productImage;
-                            if (msg.product_image_url && typeof msg.product_image_url === 'string' && msg.product_image_url.trim() !== '' && msg.product_image_url !== 'null') {
-                                productImage = msg.product_image_url.startsWith('http') ? 
-                                    msg.product_image_url : 
-                                    `${contextPath}/${msg.product_image_url}`;
-                            } else {
-                                productImage = `${contextPath}/img/default-product.png`;
-                            }
+                            const productImage = KaruruUtils.resolveProductImageUrl(msg.product_image_url);
                             const productId = parseInt(msg.product_id) || 0;
                             if (productId > 0) {
                                 // Determine label based on message type or context
@@ -1113,7 +1106,7 @@ function showAttachmentPreview() {
     previewContainer.innerHTML = selectedAttachments.map((att, index) => `
         <div class="attachment-preview-item">
             <img src="${att.dataUrl}" alt="${att.name}" class="attachment-preview-img">
-            <button type="button" class="btn btn-sm btn-outline-dark attachment-remove-btn" data-index="${index}">
+            <button type="button" class="btn btn-sm btn-danger attachment-remove-btn" data-index="${index}">
                 <i class="bi bi-x text-dark"></i>
             </button>
         </div>

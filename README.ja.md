@@ -34,9 +34,9 @@ Servlet のライフサイクル、フィルタチェーン、セッションに
   │  HTTP / WebSocket
   ▼
 フィルタチェーン
+  ├─ EncodingFilter  … すべてのリクエストを UTF-8 として読み込む（最初に実行）
   ├─ CsrfFilter      … クロスオリジンの POST/PUT/DELETE を拒否
   └─ SessionFilter   … 保護されたパスを制御（/dashboard.jsp、/admin/* など）
-  （リクエスト／レスポンスの UTF-8 エンコーディングは META-INF/context.xml で設定）
   │
   ▼
 Servlet レイヤー（34 個）── 1 機能 1 Servlet。JSON API は ApiServlet を継承

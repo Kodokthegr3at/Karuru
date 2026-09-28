@@ -34,9 +34,9 @@ Browser
   │  HTTP / WebSocket
   ▼
 Filter Chain
+  ├─ EncodingFilter  … decodes every request as UTF-8 (runs first)
   ├─ CsrfFilter      … rejects cross-origin POST/PUT/DELETE
   └─ SessionFilter   … gatekeeps protected paths (/dashboard.jsp, /admin/*, etc.)
-  (UTF-8 request/response encoding is set in META-INF/context.xml)
   │
   ▼
 Servlet Layer (34 servlets) ── one feature, one servlet; JSON APIs extend ApiServlet

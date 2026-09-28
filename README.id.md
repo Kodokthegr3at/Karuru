@@ -34,9 +34,9 @@ Browser
   │  HTTP / WebSocket
   ▼
 Rantai Filter
+  ├─ EncodingFilter  … membaca setiap request sebagai UTF-8 (berjalan pertama)
   ├─ CsrfFilter      … menolak POST/PUT/DELETE lintas origin
   └─ SessionFilter   … menjaga path yang dilindungi (/dashboard.jsp, /admin/*, dll.)
-  (encoding UTF-8 untuk request/response diatur di META-INF/context.xml)
   │
   ▼
 Lapisan Servlet (34 servlet) ── satu fitur, satu servlet; API JSON mewarisi ApiServlet

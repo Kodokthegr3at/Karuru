@@ -1,0 +1,12 @@
+# Email configuration for Karuru Flea Market
+# Copy this file to email.properties and fill in real values.
+# email.properties is git-ignored — never commit it.
+
+mail.from=your-account@gmail.com
+# Gmail app password: https://myaccount.google.com/apppasswords
+mail.password=
+mail.smtp.host=smtp.gmail.com
+mail.smtp.port=587
+
+# Public URL used in verification / reset-password links
+app.base_url=http://localhost:8085/KaruruFleaMarket

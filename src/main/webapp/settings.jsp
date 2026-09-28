@@ -1,13 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
-<%
-    if (currentUser == null) {
-        response.sendRedirect("login.jsp?redirect=settings");
-        return;
-    }
-%>
-
-<main class="page-main py-4 settings-page">
+<main id="main" class="page-main py-4 settings-page">
     <div class="container">
         <h1 class="fw-bold mb-4">
             <i class="bi bi-gear"></i> アカウント設定
@@ -52,9 +45,16 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="email" class="form-label">メールアドレス</label>
-                                    <input type="email" class="form-control form-control-light" 
-                                           id="email" name="email">
+                                    <input type="email" class="form-control form-control-light"
+                                           id="email" name="new_email" required>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="emailPassword" class="form-label">現在のパスワード</label>
+                                    <input type="password" class="form-control form-control-light"
+                                           id="emailPassword" name="password" required autocomplete="current-password">
+                                    <small class="form-text text-muted">メールアドレスの変更には現在のパスワードが必要です</small>
+                                </div>
+                                <div class="alert d-none" role="status" data-form-result></div>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-save"></i> 保存
                                 </button>
@@ -73,19 +73,20 @@
                             <form id="passwordForm">
                                 <div class="mb-3">
                                     <label for="currentPassword" class="form-label">現在のパスワード</label>
-                                    <input type="password" class="form-control form-control-light" 
-                                           id="currentPassword" name="currentPassword" required>
+                                    <input type="password" class="form-control form-control-light"
+                                           id="currentPassword" name="current_password" required autocomplete="current-password">
                                 </div>
                                 <div class="mb-3">
                                     <label for="newPassword" class="form-label">新しいパスワード</label>
-                                    <input type="password" class="form-control form-control-light" 
-                                           id="newPassword" name="newPassword" required minlength="6">
+                                    <input type="password" class="form-control form-control-light"
+                                           id="newPassword" name="new_password" required minlength="6" autocomplete="new-password">
                                 </div>
                                 <div class="mb-3">
                                     <label for="confirmNewPassword" class="form-label">新しいパスワード（確認）</label>
                                     <input type="password" class="form-control form-control-light" 
                                            id="confirmNewPassword" name="confirmNewPassword" required>
                                 </div>
+                                <div class="alert d-none" role="status" data-form-result></div>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-key"></i> パスワードを変更
                                 </button>

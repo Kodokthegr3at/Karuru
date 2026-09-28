@@ -69,63 +69,43 @@ function setupForms() {
 
 async function handleAccountUpdate(e) {
     e.preventDefault();
-    
-    const formData = {
-        action: 'updateAccount',
-        email: document.getElementById('email').value
-    };
-    
-    try {
-        const response = await fetch(`${window.CONTEXT_PATH}/SettingsServlet`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-        }
-    } catch (error) {
-        console.error('Error updating account:', error);
+    if (await postSettingsForm(e.target, 'updateEmail')) {
+        document.getElementById('emailPassword').value = '';
     }
 }
 
 async function handlePasswordChange(e) {
     e.preventDefault();
-    
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-    
-    if (newPassword !== confirmNewPassword) {
+    const form = e.target;
+    if (form.new_password.value !== form.confirmNewPassword.value) {
+        showFormResult(form, false, '新しいパスワードが一致しません');
         return;
     }
-    
-    const formData = {
-        action: 'changePassword',
-        currentPassword: currentPassword,
-        newPassword: newPassword
-    };
-    
-    try {
-        const response = await fetch(`${window.CONTEXT_PATH}/SettingsServlet`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-            document.getElementById('passwordForm').reset();
-        } else {
-        }
-    } catch (error) {
-        console.error('Error changing password:', error);
+    if (await postSettingsForm(form, 'changePassword')) {
+        form.reset();
     }
+}
+
+/** Posts the form's fields to SettingsServlet and shows the server's message in the form. */
+async function postSettingsForm(form, action) {
+    const body = new URLSearchParams(new FormData(form));
+    body.set('action', action);
+    try {
+        const response = await fetch(`${window.CONTEXT_PATH}/SettingsServlet`, { method: 'POST', body });
+        const data = await response.json();
+        const ok = response.ok && data.success;
+        showFormResult(form, ok, data.message || data.error);
+        return ok;
+    } catch (error) {
+        showFormResult(form, false, '通信エラーが発生しました');
+        return false;
+    }
+}
+
+function showFormResult(form, ok, message) {
+    const result = form.querySelector('[data-form-result]');
+    result.textContent = message;
+    result.className = `alert ${ok ? 'alert-success' : 'alert-danger'}`;
 }
 
 async function handleNotificationUpdate(e) {

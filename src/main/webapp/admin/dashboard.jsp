@@ -1,26 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%
-    // Check admin access
-    try {
-        if (session == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp?redirect=admin/dashboard.jsp");
-            return;
-        }
-        
-        String userRole = (String) session.getAttribute("role");
-        if (userRole == null || !"admin".equals(userRole)) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-        response.sendRedirect(request.getContextPath() + "/login.jsp?redirect=admin/dashboard.jsp");
-        return;
-    }
-%>
 <%@ include file="../includes/header.jsp" %>
 
-<main class="admin-dashboard-page py-4">
+<main id="main" class="admin-dashboard-page py-4">
     <div class="container-fluid px-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2 mb-0 fw-bold">

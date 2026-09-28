@@ -52,8 +52,7 @@ public class SessionFilter implements Filter {
         
         // Check admin pages
         if (path.startsWith("/admin/")) {
-            String role = (String) session.getAttribute("role");
-            if (role == null || !role.equals("admin")) {
+            if (!Auth.isAdmin(httpRequest)) {
                 httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "管理者権限が必要です");
                 return;
             }

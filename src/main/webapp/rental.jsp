@@ -346,7 +346,7 @@
 }
 </style>
 
-<main class="page-main py-5 rental-page">
+<main id="main" class="page-main py-5 rental-page">
     <div class="container">
         <div class="row mb-4">
             <div class="col-12">

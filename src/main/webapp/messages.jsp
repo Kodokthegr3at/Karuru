@@ -1,13 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
-<%
-    if (currentUser == null) {
-        response.sendRedirect("login.jsp?redirect=messages");
-        return;
-    }
-%>
-
-<main class="messages-page py-4">
+<main id="main" class="messages-page py-4">
     <div class="container-fluid px-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2 mb-0 fw-bold page-header">

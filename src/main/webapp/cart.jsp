@@ -1,66 +1,33 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:set var="pageTitle" value="カート"/>
 <%@ include file="includes/header.jsp" %>
 
-<main class="page-main py-4 cart-page">
+<main id="main" class="cart-page">
     <div class="container">
-        <h1 class="fw-bold mb-4">
-            <i class="bi bi-cart"></i> ショッピングカート
-        </h1>
-        
-        <div id="cartContainer" style="display: none;">
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="card card-light mb-4">
-                        <div class="card-header card-header-light">
-                            <h5 class="mb-0">カート内の商品</h5>
-                        </div>
-                        <div class="card-body" id="cartItems">
-                            <!-- Cart items will be loaded via JavaScript -->
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="card card-light sticky-top" style="top: 80px;">
-                        <div class="card-header card-header-light">
-                            <h5 class="mb-0">注文概要</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>小計:</span>
-                                <span id="subtotal">¥0</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>送料:</span>
-                                <span id="shipping">¥0</span>
-                            </div>
-                            <hr>
-                            <div class="d-flex justify-content-between mb-3">
-                                <strong>合計:</strong>
-                                <strong class="text-primary fs-5" id="total">¥0</strong>
-                            </div>
-                            <a href="${pageContext.request.contextPath}/checkout.jsp" 
-                               class="btn btn-primary w-100" id="checkoutBtn">
-                                <i class="bi bi-credit-card"></i> レジに進む
-                            </a>
-                            <div id="emptyCartMessage" class="alert alert-warning mt-3" style="display: none;">
-                                <i class="bi bi-exclamation-triangle me-2"></i>カートに商品を追加してください
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <header class="page-header">
+            <h1>カート</h1>
+        </header>
+
+        <div class="checkout-layout" id="cartContainer" hidden>
+            <section aria-label="カートの商品">
+                <ul class="line-items" id="cartItems"></ul>
+            </section>
+            <aside class="panel order-summary" aria-label="合計">
+                <dl class="summary-list">
+                    <div><dt>小計</dt><dd class="price" id="subtotal"></dd></div>
+                    <div><dt>送料（目安）</dt><dd class="price" id="shipping"></dd></div>
+                    <div class="summary-total"><dt>合計</dt><dd class="price" id="total"></dd></div>
+                </dl>
+                <p class="form-text">送料は次の画面で選ぶ配送方法によって変わります。</p>
+                <a class="btn btn-primary btn-lg w-100" href="${pageContext.request.contextPath}/checkout.jsp">購入手続きへ</a>
+            </aside>
         </div>
-        
-        <div id="emptyCart" class="empty-state-container" style="display: flex;">
-            <div class="empty-state-content">
-                <i class="bi bi-cart-x empty-state-icon"></i>
-                <h3 class="empty-state-title">カートは空です</h3>
-                <p class="empty-state-description">商品を追加してカートを満たしましょう</p>
-                <a href="${pageContext.request.contextPath}/products.jsp" class="btn btn-primary btn-lg empty-state-button">
-                    <i class="bi bi-bag me-2"></i>商品を見る
-                </a>
-            </div>
+
+        <div class="empty-state" id="emptyCart" hidden>
+            <i class="bi bi-bag"></i>
+            <p>カートに商品はありません</p>
+            <a class="btn btn-primary" href="${pageContext.request.contextPath}/products.jsp">商品を探す</a>
         </div>
     </div>
 </main>

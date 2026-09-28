@@ -8,3 +8,6 @@ db.password=
 
 # If MySQL has a password, set it:
 # db.password=your_password
+
+# Max pooled connections (optional, default 20)
+# db.pool.max=20

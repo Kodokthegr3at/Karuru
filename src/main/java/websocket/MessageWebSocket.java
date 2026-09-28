@@ -1,9 +1,10 @@
 package websocket;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.websocket.CloseReason;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -11,173 +12,75 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
-import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 import util.WebSocketManager;
+import util.WebSocketManager.Channel;
 
-/**
- * WebSocket Endpoint for Real-time Messaging
- */
-@ServerEndpoint("/message-websocket")
+/** Real-time chat channel: delivers new messages, read receipts and typing indicators. */
+@ServerEndpoint(value = "/message-websocket", configurator = SessionUserConfigurator.class)
 public class MessageWebSocket {
-    private static final Gson gson = new Gson();
-    
+    private static final Logger LOG = Logger.getLogger(MessageWebSocket.class.getName());
+
     @OnOpen
-    public void onOpen(Session session) {
-        String query = session.getQueryString();
-        Integer userId = extractUserIdFromQuery(query);
-        
-        if (userId != null) {
-            // Add to WebSocketManager
-            WebSocketManager.getInstance().addMessageSession(userId, session);
-            // Also keep in MessagesServlet for backward compatibility
-            try {
-                Class<?> messagesServletClass = Class.forName("servlet.MessagesServlet");
-                java.lang.reflect.Field userSessionsField = messagesServletClass.getField("userSessions");
-                @SuppressWarnings("unchecked")
-                Map<Integer, Session> userSessions = (Map<Integer, Session>) userSessionsField.get(null);
-                if (userSessions != null) {
-                    userSessions.put(userId, session);
-                }
-            } catch (Exception e) {
-                // Ignore if MessagesServlet is not available
-            }
-            System.out.println("[MessageWebSocket] Connected: User " + userId);
-        } else {
-            System.out.println("[MessageWebSocket] Connection failed: User ID not found in query");
+    public void onOpen(Session session) throws IOException {
+        Integer userId = SessionUserConfigurator.userId(session);
+        if (userId == null) {
+            session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "Login required"));
+            return;
         }
+        WebSocketManager.getInstance().add(Channel.MESSAGES, userId, session);
     }
-    
+
+    /** Client frames: {"type":"ping"} or {"type":"typing","receiverId":n,"typing":true|false}. */
     @OnMessage
-    public void onMessage(String message, Session session) {
+    public void onMessage(String text, Session session) throws IOException {
+        JsonObject frame;
         try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> msgData = gson.fromJson(message, Map.class);
-            String type = (String) msgData.get("type");
-            
-            if ("typing".equals(type)) {
-                Integer receiverId = null;
-                Object receiverIdObj = msgData.get("receiverId") != null ? 
-                    msgData.get("receiverId") : msgData.get("receiver_id");
-                
-                if (receiverIdObj instanceof Double) {
-                    receiverId = ((Double) receiverIdObj).intValue();
-                } else if (receiverIdObj instanceof Integer) {
-                    receiverId = (Integer) receiverIdObj;
-                } else if (receiverIdObj != null) {
-                    try {
-                        receiverId = Integer.parseInt(receiverIdObj.toString());
-                    } catch (NumberFormatException e) {
-                        // Invalid receiver ID
-                    }
-                }
-                
-                Boolean isTyping = null;
-                Object typingObj = msgData.get("typing") != null ? 
-                    msgData.get("typing") : msgData.get("isTyping");
-                if (typingObj instanceof Boolean) {
-                    isTyping = (Boolean) typingObj;
-                } else if (typingObj != null) {
-                    isTyping = Boolean.parseBoolean(typingObj.toString());
-                }
-                
-                if (receiverId != null && isTyping != null) {
-                    Integer senderId = extractUserIdFromQuery(session.getQueryString());
-                    String senderName = null; // Could be retrieved from database if needed
-                    
-                    // Use WebSocketManager to send typing indicator
-                    WebSocketManager.getInstance().sendTypingIndicator(receiverId, senderId, senderName, isTyping);
-                }
-            } else if ("ping".equals(type)) {
-                // Handle ping for keep-alive - respond with pong
-                try {
-                    Map<String, Object> pong = new HashMap<>();
-                    pong.put("type", "pong");
-                    session.getBasicRemote().sendText(gson.toJson(pong));
-                } catch (IOException e) {
-                    System.err.println("[MessageWebSocket] Error sending pong: " + e.getMessage());
-                }
+            frame = JsonParser.parseString(text).getAsJsonObject();
+        } catch (JsonParseException | IllegalStateException e) {
+            return; // ignore malformed frames
+        }
+        String type = frame.has("type") ? frame.get("type").getAsString() : "";
+        if (type.equals("ping")) {
+            synchronized (session) {
+                session.getBasicRemote().sendText("{\"type\":\"pong\"}");
             }
-        } catch (Exception e) {
-            System.err.println("[MessageWebSocket] Error processing message: " + e.getMessage());
-            e.printStackTrace();
+        } else if (type.equals("typing")) {
+            Integer receiverId = intField(frame, "receiverId", "receiver_id");
+            JsonElement typing = frame.has("typing") ? frame.get("typing") : frame.get("isTyping");
+            Integer senderId = SessionUserConfigurator.userId(session);
+            if (receiverId != null && typing != null && senderId != null) {
+                WebSocketManager.getInstance().sendTypingIndicator(receiverId, senderId, null, typing.getAsBoolean());
+            }
         }
     }
-    
+
     @OnClose
     public void onClose(Session session) {
-        Integer userIdToRemove = null;
-        
-        // Find userId from WebSocketManager
-        WebSocketManager wsManager = WebSocketManager.getInstance();
-        for (Map.Entry<Integer, Session> entry : getMessageSessions().entrySet()) {
-            if (entry.getValue().equals(session)) {
-                userIdToRemove = entry.getKey();
-                break;
-            }
-        }
-        
-        if (userIdToRemove != null) {
-            // Remove from WebSocketManager
-            wsManager.removeMessageSession(userIdToRemove);
-            
-            // Also remove from MessagesServlet for backward compatibility
-            try {
-                Class<?> messagesServletClass = Class.forName("servlet.MessagesServlet");
-                java.lang.reflect.Field userSessionsField = messagesServletClass.getField("userSessions");
-                @SuppressWarnings("unchecked")
-                Map<Integer, Session> userSessions = (Map<Integer, Session>) userSessionsField.get(null);
-                if (userSessions != null) {
-                    userSessions.remove(userIdToRemove);
-                }
-            } catch (Exception e) {
-                // Ignore if MessagesServlet is not available
-            }
-            
-            System.out.println("[MessageWebSocket] Disconnected: User " + userIdToRemove);
-        } else {
-            // Try to remove by session
-            wsManager.removeMessageSessionBySession(session);
-        }
+        WebSocketManager.getInstance().remove(Channel.MESSAGES, session);
     }
-    
+
     @OnError
     public void onError(Session session, Throwable error) {
-        System.err.println("[MessageWebSocket] Error: " + error.getMessage());
-        error.printStackTrace();
+        LOG.log(Level.FINE, "Message WebSocket error", error);
+        WebSocketManager.getInstance().remove(Channel.MESSAGES, session);
     }
-    
-    private Integer extractUserIdFromQuery(String query) {
-        if (query != null) {
-            try {
-                String[] params = query.split("&");
-                for (String param : params) {
-                    // Support both userId and user_id
-                    if (param.startsWith("userId=")) {
-                        return Integer.parseInt(param.substring(7));
-                    } else if (param.startsWith("user_id=")) {
-                        return Integer.parseInt(param.substring(8));
-                    }
+
+    private static Integer intField(JsonObject frame, String... names) {
+        for (String name : names) {
+            JsonElement value = frame.get(name);
+            if (value != null && value.isJsonPrimitive()) {
+                try {
+                    return value.getAsInt();
+                } catch (NumberFormatException e) {
+                    return null;
                 }
-            } catch (NumberFormatException e) {
-                System.err.println("[MessageWebSocket] Invalid userId format: " + query);
             }
         }
         return null;
     }
-    
-    @SuppressWarnings("unchecked")
-    private Map<Integer, Session> getMessageSessions() {
-        try {
-            // Access WebSocketManager's messageSessions via reflection
-            WebSocketManager wsManager = WebSocketManager.getInstance();
-            java.lang.reflect.Field field = WebSocketManager.class.getDeclaredField("messageSessions");
-            field.setAccessible(true);
-            return (Map<Integer, Session>) field.get(wsManager);
-        } catch (Exception e) {
-            // Return empty map if reflection fails
-            return new HashMap<>();
-        }
-    }
 }
-

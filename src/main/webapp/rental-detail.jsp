@@ -1,12 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
-<%
-    if (currentUser == null) {
-        response.sendRedirect("login.jsp?redirect=rental-detail");
-        return;
-    }
-%>
-
 <style>
 .rental-detail-page {
     min-height: calc(100vh - 200px);
@@ -59,7 +52,7 @@
 }
 </style>
 
-<main class="page-main py-4 rental-detail-page">
+<main id="main" class="page-main py-4 rental-detail-page">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <h1 class="fw-bold mb-0 page-header">

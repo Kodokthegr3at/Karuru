@@ -1,82 +1,77 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
 
-<main class="bg-light py-4 product-detail-page" style="min-height: calc(100vh - 76px);">
-    <div class="container container-product-detail">
-        <div id="productDetail" class="mb-5">
-            <!-- Product details will be loaded via JavaScript -->
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">読み込み中...</span>
-                </div>
-            </div>
-        </div>
+<main id="main" class="product-page">
+    <div class="container">
+        <div id="productDetail" aria-live="polite"></div>
 
-        <!-- Product Reviews Section -->
-        <section class="mb-5">
-            <div class="card bg-white border">
-                <div class="card-header bg-light border-bottom">
-                    <h3 class="mb-0">
-                        <i class="bi bi-star-fill text-warning me-2"></i>レビュー
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div id="reviewsContainer">
-                        <div class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">読み込み中...</span>
-                            </div>
-                        </div>
-                    </div>
-                    <% if (currentUser != null) { %>
-                        <div id="reviewFormContainer" class="mt-4 pt-4 border-top">
-                            <h4 class="mb-3">
-                                <i class="bi bi-pencil-square me-2"></i>レビューを書く
-                            </h4>
-                            <form id="reviewForm">
-                                <div class="mb-3">
-                                    <label for="reviewRating" class="form-label">評価 <span class="text-danger">*</span></label>
-                                    <select class="form-select border" id="reviewRating" required>
-                                        <option value="">選択してください</option>
-                                        <option value="5">5 - 最高</option>
-                                        <option value="4">4 - 良い</option>
-                                        <option value="3">3 - 普通</option>
-                                        <option value="2">2 - 悪い</option>
-                                        <option value="1">1 - 最悪</option>
-                                    </select>
-                                    <small class="text-muted">上記の星をクリックして評価を選択することもできます</small>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="reviewText" class="form-label">レビュー内容 <span class="text-danger">*</span></label>
-                                    <textarea class="form-control border" 
-                                              id="reviewText" rows="5" 
-                                              placeholder="商品の使用感、品質、配送などについてレビューを入力してください" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-send me-2"></i>レビューを投稿
-                                </button>
-                            </form>
-                        </div>
-                    <% } else { %>
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i>レビューを投稿するにはログインが必要です
-                        </div>
-                    <% } %>
-                </div>
+        <section class="section" id="reviewsSection" aria-labelledby="reviewsTitle" hidden>
+            <div class="section-head">
+                <h2 id="reviewsTitle">レビュー</h2>
             </div>
+            <div id="reviewsContainer"></div>
+
+            <c:if test="${signedIn}">
+            <form class="panel review-form" id="reviewForm" hidden>
+                <h3>レビューを書く</h3>
+                <fieldset class="mb-3">
+                    <legend class="form-label">評価</legend>
+                    <div class="star-input">
+                        <c:forEach var="n" begin="1" end="5">
+                        <c:set var="stars" value="${6 - n}"/>
+                        <input type="radio" name="rating" id="rating${stars}" value="${stars}" required>
+                        <label for="rating${stars}" title="${stars}"><i class="bi bi-star-fill"></i><span class="visually-hidden">${stars}</span></label>
+                        </c:forEach>
+                    </div>
+                </fieldset>
+                <div class="mb-3">
+                    <label class="form-label" for="reviewText">コメント</label>
+                    <textarea class="form-control" id="reviewText" name="review_text" rows="4" maxlength="2000" required
+                              placeholder="使い心地や商品の状態など"></textarea>
+                </div>
+                <button class="btn btn-primary" type="submit">投稿する</button>
+            </form>
+            </c:if>
         </section>
 
-        <!-- Related Products Section -->
-        <section>
-            <h3 class="mb-4">
-                <i class="bi bi-grid"></i> 関連商品
-            </h3>
-            <div class="row g-4" id="relatedProducts">
-                <!-- Related products will be loaded via JavaScript -->
+        <section class="section" id="relatedSection" aria-labelledby="relatedTitle" hidden>
+            <div class="section-head">
+                <h2 id="relatedTitle">似ている商品</h2>
             </div>
+            <div class="product-grid" id="relatedProducts"></div>
         </section>
     </div>
 </main>
+
+<div class="modal fade" id="offerModal" tabindex="-1" aria-labelledby="offerModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="offerForm">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="offerModalTitle">値下げを交渉する</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">販売価格 <span class="price" id="offerCurrentPrice"></span></p>
+                <div class="mb-3">
+                    <label class="form-label" for="offerPrice">希望価格</label>
+                    <div class="input-group">
+                        <span class="input-group-text">¥</span>
+                        <input class="form-control" type="number" id="offerPrice" name="offer_price" min="1" step="1" required>
+                    </div>
+                    <div class="form-text">販売価格より低い金額を入力してください。</div>
+                </div>
+                <div>
+                    <label class="form-label" for="offerMessage">メッセージ（任意）</label>
+                    <textarea class="form-control" id="offerMessage" name="message" rows="3" maxlength="500"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link" data-bs-dismiss="modal">キャンセル</button>
+                <button type="submit" class="btn btn-primary">送信する</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script src="${pageContext.request.contextPath}/js/product-detail.js"></script>
 <%@ include file="includes/footer.jsp" %>

@@ -559,7 +559,7 @@ function deleteOffer(offerId) {
             }
         } else {
             if (typeof KaruruUtils !== 'undefined' && KaruruUtils.showNotification) {
-                KaruruUtils.showNotification(data.message || '削除に失敗しました', 'danger');
+                KaruruUtils.showNotification(data.error || '削除に失敗しました', 'danger');
             }
         }
     })

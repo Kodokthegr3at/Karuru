@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
 
-<main class="page-main py-5">
+<main id="main" class="page-main py-5">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-8">

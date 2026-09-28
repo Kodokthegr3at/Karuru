@@ -1,24 +1,29 @@
 package util;
 
+import java.util.Properties;
+
 /**
- * Email configuration utility
- * Store email credentials separately for better security
- * In production, move these to environment variables or config files
+ * Email configuration, loaded from email.properties on the classpath (src/main/resources/).
+ * Copy email.properties.example to email.properties and fill in the credentials.
+ * email.properties is git-ignored — never commit real credentials.
  */
 public class EmailConfig {
-    
-    // Email Configuration
-    public static final String MAIL_FROM = "karurufleamarket@gmail.com";
-    public static final String MAIL_PASS = "bpte whux lqlr vfvr"; // App password
-    public static final String SMTP_HOST = "smtp.gmail.com";
-    public static final String SMTP_PORT = "587";
-    
-    // Application URL
-    public static final String BASE_URL = "http://localhost:8085/KaruruFleaMarket";
-    
-    /**
-     * Private constructor to prevent instantiation
-     */
+
+    public static final String MAIL_FROM;
+    public static final String MAIL_PASS;
+    public static final String SMTP_HOST;
+    public static final String SMTP_PORT;
+    public static final String BASE_URL;
+
+    static {
+        Properties props = AppConfig.load("email.properties");
+        MAIL_FROM = AppConfig.require(props, "mail.from", "email.properties");
+        MAIL_PASS = AppConfig.require(props, "mail.password", "email.properties");
+        SMTP_HOST = props.getProperty("mail.smtp.host", "smtp.gmail.com");
+        SMTP_PORT = props.getProperty("mail.smtp.port", "587");
+        BASE_URL = AppConfig.require(props, "app.base_url", "email.properties");
+    }
+
     private EmailConfig() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }

@@ -5,8 +5,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -14,95 +18,53 @@ import javax.servlet.http.HttpServletResponse;
 
 import util.DatabaseConnection;
 
-/**
- * Servlet untuk verify user account
- * Endpoint: /VerifyServlet
- */
+/** Email verification link target (/VerifyServlet?code=...). Always redirects to the login page. */
 @WebServlet("/VerifyServlet")
 public class VerifyServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-
-    public VerifyServlet() {
-        super();
-    }
+    private static final Logger LOG = Logger.getLogger(VerifyServlet.class.getName());
+    private static final Duration LINK_VALIDITY = Duration.ofHours(24);
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String code = request.getParameter("code");
-        String contextPath = request.getContextPath();
-        
-        if (code == null || code.trim().isEmpty()) {
-            response.sendRedirect(contextPath + "/login.jsp?error=invalid_verification_code");
-            return;
-        }
-
-        Connection conn = null;
-        PreparedStatement checkStmt = null;
-        PreparedStatement updateStmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            
-            // Check if token exists - sesuai struktur tabel users
-            String checkSql = "SELECT user_id, username, email, is_verified, created_at " +
-                             "FROM users WHERE verification_token=? AND deleted_at IS NULL";
-            checkStmt = conn.prepareStatement(checkSql);
-            checkStmt.setString(1, code);
-            rs = checkStmt.executeQuery();
-
-            if (rs.next()) {
-                boolean alreadyVerified = rs.getBoolean("is_verified");
-                
-                if (alreadyVerified) {
-                    response.sendRedirect(contextPath + "/login.jsp?info=already_verified");
-                    return;
-                }
-
-                // Check if token is expired (24 hours)
-                java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
-                long hoursSinceCreation = (System.currentTimeMillis() - createdAt.getTime()) / (1000 * 60 * 60);
-                
-                if (hoursSinceCreation > 24) {
-                    response.sendRedirect(contextPath + "/login.jsp?error=verification_expired");
-                    return;
-                }
-
-                // Update user verification status - sesuai field di tabel users
-                String updateSql = "UPDATE users SET is_verified=1, verification_token=NULL, " +
-                                  "verified_at=NOW(), updated_at=NOW() WHERE verification_token=?";
-                updateStmt = conn.prepareStatement(updateSql);
-                updateStmt.setString(1, code);
-                
-                int updated = updateStmt.executeUpdate();
-
-                if (updated > 0) {
-                    String username = rs.getString("username");
-                    System.out.println("User verified successfully: " + username);
-                    response.sendRedirect(contextPath + "/login.jsp?success=verified");
-                } else {
-                    response.sendRedirect(contextPath + "/login.jsp?error=verification_failed");
-                }
-            } else {
-                response.sendRedirect(contextPath + "/login.jsp?error=invalid_verification_code");
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            response.sendRedirect(contextPath + "/login.jsp?error=database_error");
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendRedirect(contextPath + "/login.jsp?error=server_error");
-        } finally {
-            DatabaseConnection.closeResources(rs, checkStmt, updateStmt, conn);
-        }
+        String outcome = (code == null || code.isBlank()) ? "error=invalid_verification_code" : verify(code);
+        response.sendRedirect(request.getContextPath() + "/login.jsp?" + outcome);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         doGet(request, response);
+    }
+
+    /** Returns the login.jsp query string describing the result. */
+    private String verify(String code) {
+        String findSql = "SELECT is_verified, created_at FROM users WHERE verification_token = ? AND deleted_at IS NULL";
+        String verifySql = "UPDATE users SET is_verified = 1, verification_token = NULL, verified_at = NOW(), "
+                + "updated_at = NOW() WHERE verification_token = ?";
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            try (PreparedStatement find = conn.prepareStatement(findSql)) {
+                find.setString(1, code);
+                try (ResultSet rs = find.executeQuery()) {
+                    if (!rs.next()) {
+                        return "error=invalid_verification_code";
+                    }
+                    if (rs.getBoolean("is_verified")) {
+                        return "info=already_verified";
+                    }
+                    Timestamp createdAt = rs.getTimestamp("created_at");
+                    if (Duration.between(createdAt.toInstant(), Instant.now()).compareTo(LINK_VALIDITY) > 0) {
+                        return "error=verification_expired";
+                    }
+                }
+            }
+            try (PreparedStatement update = conn.prepareStatement(verifySql)) {
+                update.setString(1, code);
+                return update.executeUpdate() > 0 ? "success=verified" : "error=verification_failed";
+            }
+        } catch (SQLException e) {
+            LOG.log(Level.SEVERE, "Email verification failed", e);
+            return "error=database_error";
+        }
     }
 }

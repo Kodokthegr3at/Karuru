@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
-    <Resource name="jdbc/karuru_db" 
-              auth="Container" 
-              type="javax.sql.DataSource"
-              maxTotal="100" 
-              maxIdle="30" 
-              maxWaitMillis="10000"
-              username="root" 
-              password="" 
-              driverClassName="com.mysql.cj.jdbc.Driver"
-              url="jdbc:mysql://localhost:3306/karuru_db?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=Asia/Tokyo&amp;useSSL=false"/>
+    <!-- SameSite=Lax session cookie: browsers won't send it on cross-site POSTs (CSRF defense, see util.CsrfFilter) -->
+    <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor" sameSiteCookies="lax"/>
 </Context>
-

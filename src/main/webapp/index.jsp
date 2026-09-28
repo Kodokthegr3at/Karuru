@@ -1,105 +1,63 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
 
-<main class="home-page">
-    <!-- Hero Banner Section -->
-    <section class="hero-banner-section py-0">
-        <div class="container-fluid px-0">
-            <div id="bannerSlider" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
-                <div class="carousel-inner">
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">読み込み中...</span>
-                        </div>
-                    </div>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#bannerSlider" data-bs-slide="prev">
+<main id="main" class="home-page">
+    <div class="container">
+        <section class="home-intro">
+            <h1>あなたの不要なものを、誰かの宝物に。</h1>
+            <form class="home-search" action="${pageContext.request.contextPath}/products.jsp" role="search">
+                <label class="visually-hidden" for="homeSearch">商品を検索</label>
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control form-control-lg" type="search" id="homeSearch" name="search"
+                       placeholder="何をお探しですか？" autocomplete="off">
+            </form>
+        </section>
+
+        <section class="home-banners" id="bannerSection" hidden>
+            <div id="bannerSlider" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000">
+                <div class="carousel-inner"></div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#bannerSlider" data-bs-slide="prev" hidden>
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">前へ</span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#bannerSlider" data-bs-slide="next">
+                <button class="carousel-control-next" type="button" data-bs-target="#bannerSlider" data-bs-slide="next" hidden>
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">次へ</span>
                 </button>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Categories Section -->
-    <section class="categories-section py-5">
-        <div class="container">
-            <div class="section-header mb-4">
-                <h2 class="section-title fw-bold mb-2">
-                    <i class="bi bi-tags-fill me-2 text-primary"></i>カテゴリー
-                </h2>
-                <p class="text-muted mb-0">商品カテゴリーから探す</p>
+        <section class="section" aria-labelledby="categoriesTitle">
+            <div class="section-head">
+                <h2 id="categoriesTitle">カテゴリーから探す</h2>
+                <a href="${pageContext.request.contextPath}/categories.jsp">すべて見る</a>
             </div>
-            <div class="row g-4" id="categoriesGrid">
-                <div class="col-12 text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">読み込み中...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            <div class="category-strip" id="categoriesGrid"></div>
+        </section>
 
-    <!-- Featured Products Section -->
-    <section class="featured-products-section py-5 bg-section-alt">
-        <div class="container">
-            <div class="section-header mb-4">
-                <h2 class="section-title fw-bold mb-2">
-                    <i class="bi bi-star-fill me-2 text-primary"></i>おすすめ商品
-                </h2>
-                <p class="text-muted mb-0">厳選されたおすすめ商品</p>
+        <section class="section" id="featuredSection" aria-labelledby="featuredTitle" hidden>
+            <div class="section-head">
+                <h2 id="featuredTitle">おすすめ</h2>
             </div>
-            <div class="row g-4" id="featuredProducts">
-                <div class="col-12 text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">読み込み中...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            <div class="product-grid" id="featuredProducts"></div>
+        </section>
 
-    <!-- Recent Products Section -->
-    <section class="recent-products-section py-5">
-        <div class="container">
-            <div class="section-header mb-4">
-                <h2 class="section-title fw-bold mb-2">
-                    <i class="bi bi-clock-history me-2 text-primary"></i>新着商品
-                </h2>
-                <p class="text-muted mb-0">最新の出品商品</p>
+        <section class="section" aria-labelledby="recentTitle">
+            <div class="section-head">
+                <h2 id="recentTitle">新着商品</h2>
+                <a href="${pageContext.request.contextPath}/products.jsp?sort=newest">すべて見る</a>
             </div>
-            <div class="row g-4" id="recentProducts">
-                <div class="col-12 text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">読み込み中...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            <div class="product-grid" id="recentProducts"></div>
+        </section>
 
-    <!-- Popular Products Section -->
-    <section class="popular-products-section py-5 bg-section-alt">
-        <div class="container">
-            <div class="section-header mb-4">
-                <h2 class="section-title fw-bold mb-2">
-                    <i class="bi bi-fire me-2 text-primary"></i>人気商品
-                </h2>
-                <p class="text-muted mb-0">今注目の商品</p>
+        <section class="section" aria-labelledby="popularTitle">
+            <div class="section-head">
+                <h2 id="popularTitle">人気の商品</h2>
+                <a href="${pageContext.request.contextPath}/products.jsp?sort=popular">すべて見る</a>
             </div>
-            <div class="row g-4" id="popularProducts">
-                <div class="col-12 text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">読み込み中...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            <div class="product-grid" id="popularProducts"></div>
+        </section>
+    </div>
 </main>
 
 <script src="${pageContext.request.contextPath}/js/home.js"></script>

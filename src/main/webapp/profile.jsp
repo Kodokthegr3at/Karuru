@@ -1,12 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
-<%
-    if (currentUser == null) {
-        response.sendRedirect("login.jsp?redirect=profile");
-        return;
-    }
-%>
-
 <style>
 .profile-page {
     background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);
@@ -150,7 +143,7 @@
 }
 </style>
 
-<main class="profile-page py-5">
+<main id="main" class="profile-page py-5">
     <div class="container">
         <div class="row mb-4">
             <div class="col-12">
@@ -249,14 +242,16 @@
                                 <div class="col-md-6">
                                     <div class="profile-form-group">
                                         <label for="email">
-                                            <i class="bi bi-envelope"></i>メールアドレス <span class="text-danger">*</span>
+                                            <i class="bi bi-envelope"></i>メールアドレス
                                         </label>
-                                        <input type="email" 
-                                               class="form-control" 
-                                               id="email" 
-                                               name="email" 
+                                        <input type="email"
+                                               class="form-control"
+                                               id="email"
                                                placeholder="メールアドレス"
-                                               required>
+                                               readonly>
+                                        <small class="form-text text-muted">
+                                            変更は<a href="${pageContext.request.contextPath}/settings.jsp">設定ページ</a>から行えます
+                                        </small>
                                     </div>
                                 </div>
                             </div>

@@ -1,780 +1,341 @@
 package servlet;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
-import util.DatabaseConnection;
-import util.FilterEncodingUTF8;
+import dao.ActivityLog;
+import util.Json;
 
+/**
+ * Shopping cart. A cart row keeps the price at the time it was added (price_snapshot); for a product bought
+ * through an accepted offer that is the offer price.
+ */
 @WebServlet({"/CartServlet", "/Cart"})
-public class CartServlet extends HttpServlet {
+public class CartServlet extends ApiServlet {
     private static final long serialVersionUID = 1L;
-    private static final Gson gson = new Gson();
+    private static final BigDecimal SHIPPING_ESTIMATE = new BigDecimal("500");
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        FilterEncodingUTF8.configureUTF8ForJSON(request, response);
-        
-        String action = request.getParameter("action");
-        
-        try {
-            if (action == null || action.isEmpty()) {
-                sendError(response, "Action parameter is required");
-                return;
-            }
-            
-            switch (action) {
-                case "getCart":
-                    getCart(request, response);
-                    break;
-                case "getCartCount":
-                    getCartCount(request, response);
-                    break;
-                default:
-                    sendError(response, "Invalid action: " + action);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendError(response, "Server error: " + e.getMessage());
-        }
+    /** Same visibility rule as checkout: available, or reserved for this buyer by an accepted offer. */
+    private static final String ORDERABLE = """
+            (p.status = 'available' OR (p.status = 'reserved' AND EXISTS (
+                SELECT 1 FROM offers o WHERE o.product_id = p.product_id AND o.buyer_id = c.user_id AND o.status = 'accepted')))
+            """;
+
+    private static final String CART_SQL = """
+            SELECT c.cart_id, c.quantity, c.price_snapshot, c.added_at,
+                   p.product_id, p.product_name, p.description, p.price, p.original_price, p.discount_percentage,
+                   p.stock_quantity, p.status, p.image_url, p.is_rental, p.condition,
+                   p.rental_price_daily, p.rental_price_weekly, p.rental_price_monthly,
+                   u.username AS seller_name, u.user_id AS seller_id
+            FROM carts c
+            JOIN products p ON c.product_id = p.product_id
+            LEFT JOIN users u ON p.user_id = u.user_id
+            WHERE c.user_id = ? AND """ + ORDERABLE + " ORDER BY c.added_at DESC";
+
+    /** A cart row joined with its product's current stock and status. */
+    private record CartRow(int cartId, int productId, int quantity, int stock, String status) {
     }
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        FilterEncodingUTF8.configureUTF8ForJSON(request, response);
-        
-        String action = request.getParameter("action");
-        
-        try {
-            if (action == null || action.isEmpty()) {
-                sendError(response, "Action parameter is required");
-                return;
-            }
-            
-            switch (action) {
-                case "add":
-                    addToCart(request, response);
-                    break;
-                case "update":
-                    updateCartItem(request, response);
-                    break;
-                case "remove":
-                    removeFromCart(request, response);
-                    break;
-                case "clear":
-                    clearCart(request, response);
-                    break;
-                default:
-                    sendError(response, "Invalid action: " + action);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendError(response, "Server error: " + e.getMessage());
-        }
+
+    public CartServlet() {
+        route("GET", "getCart", Access.USER, this::show);
+        route("GET", "getCartCount", Access.PUBLIC, this::count);
+        route("POST", "add", Access.USER, this::add);
+        route("POST", "update", Access.USER, this::update);
+        route("POST", "remove", Access.USER, this::remove);
+        route("POST", "clear", Access.USER, this::clear);
     }
-    
-    /** Get user ID from session, trying user_id and userId, handling Integer/Long/String. */
-    private Integer getSessionUserId(HttpSession session) {
-        if (session == null) return null;
-        Object obj = session.getAttribute("user_id");
-        if (obj == null) obj = session.getAttribute("userId");
-        if (obj == null) return null;
-        if (obj instanceof Integer) return (Integer) obj;
-        if (obj instanceof Long) return Integer.valueOf(((Long) obj).intValue());
-        try {
-            return Integer.valueOf(obj.toString());
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-    
-    // ==================== LOG CART ACTIVITY ====================
-    private void logCartActivity(int userId, int productId, String action, int quantity) {
-    	ActivityServlet.logUserActivity(userId, "cart_" + action, "product", productId, 
-            "{\"action\": \"" + action + "\", \"product_id\": " + productId + ", \"quantity\": " + quantity + "}");
-    }
-    
-    // ==================== GET CART ====================
-    private void getCart(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        
-        HttpSession session = request.getSession(false);
-        Integer userId = getSessionUserId(session);
-        if (session == null || userId == null) {
-            sendError(response, "ログインが必要です");
-            return;
-        }
-        List<Map<String, Object>> cartItems = new ArrayList<>();
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Map<String, Object> responseData = new HashMap<>();
-        
-        try {
-            conn = DatabaseConnection.getConnection();
-            
-            String sql = """
-                SELECT 
-                    c.cart_id, c.quantity, c.price_snapshot, c.added_at,
-                    p.product_id, p.product_name, p.description, p.price, 
-                    p.original_price, p.discount_percentage, p.stock_quantity, 
-                    p.status, p.image_url, p.is_rental, p.condition,
-                    p.rental_price_daily, p.rental_price_weekly, p.rental_price_monthly,
-                    u.username as seller_name, u.user_id as seller_id
-                FROM carts c
-                INNER JOIN products p ON c.product_id = p.product_id
-                LEFT JOIN users u ON p.user_id = u.user_id
-                WHERE c.user_id = ? AND (p.status = 'available' OR (p.status = 'reserved' AND EXISTS (
-                    SELECT 1 FROM offers o WHERE o.product_id = p.product_id AND o.buyer_id = c.user_id AND o.status = 'accepted')))
-                ORDER BY c.added_at DESC
-                """;
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, userId);
-            rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                cartItems.add(mapCartItemFromResultSet(rs));
-            }
-            
-            // Calculate totals
-            double subtotal = 0.0;
-            for (Map<String, Object> item : cartItems) {
-                double price = ((Number) item.get("price_snapshot")).doubleValue();
-                int quantity = ((Number) item.get("quantity")).intValue();
-                subtotal += price * quantity;
-            }
-            
-            // Shipping cost (default 500 yen)
-            double shipping = cartItems.isEmpty() ? 0.0 : 500.0;
-            double total = subtotal + shipping;
-            
-            // Build response object
-            responseData.put("items", cartItems);
-            responseData.put("subtotal", subtotal);
-            responseData.put("shipping", shipping);
-            responseData.put("total", total);
-            responseData.put("itemCount", cartItems.size());
-            
-            System.out.println("✅ Cart items found: " + cartItems.size() + " for user: " + userId);
-            System.out.println("✅ Subtotal: " + subtotal + ", Shipping: " + shipping + ", Total: " + total);
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("❌ SQL Error in getCart: " + e.getMessage());
-            sendError(response, "データベースエラー: " + e.getMessage());
-            return;
-        } finally {
-            DatabaseConnection.closeResources(rs, stmt, conn);
-        }
-        
-        sendJsonResponse(response, responseData);
-    }
-    
-    // ==================== GET CART COUNT ====================
-    private void getCartCount(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        
-        HttpSession session = request.getSession(false);
-        Integer userId = getSessionUserId(session);
-        if (session == null || userId == null) {
-            sendJsonResponse(response, Map.of("count", 0, "cartCount", 0));
-            return;
-        }
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        
-        try {
-            conn = DatabaseConnection.getConnection();
-            
-            String sql = """
-                SELECT COUNT(*) as item_count, COALESCE(SUM(quantity), 0) as total_quantity 
-                FROM carts c
-                INNER JOIN products p ON c.product_id = p.product_id
-                WHERE c.user_id = ? AND (p.status = 'available' OR (p.status = 'reserved' AND EXISTS (
-                    SELECT 1 FROM offers o WHERE o.product_id = p.product_id AND o.buyer_id = c.user_id AND o.status = 'accepted')))
-                """;
-            
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, userId);
-            rs = stmt.executeQuery();
-            
-            int itemCount = 0;
-            int totalQuantity = 0;
-            if (rs.next()) {
-                itemCount = rs.getInt("item_count");
-                totalQuantity = rs.getInt("total_quantity");
-            }
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("count", itemCount);
-            result.put("cartCount", totalQuantity);
-            
-            sendJsonResponse(response, result);
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendJsonResponse(response, Map.of("count", 0, "cartCount", 0));
-        } finally {
-            DatabaseConnection.closeResources(rs, stmt, conn);
-        }
-    }
-    
-    // ==================== ADD TO CART ====================
-    private void addToCart(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        
-        HttpSession session = request.getSession(false);
-        Integer userId = getSessionUserId(session);
-        if (session == null || userId == null) {
-            sendError(response, "ログインが必要です");
-            return;
-        }
-        
-        String productIdStr = request.getParameter("productId");
-        if (productIdStr == null || productIdStr.isEmpty()) {
-            productIdStr = request.getParameter("product_id");
-        }
-        String quantityStr = request.getParameter("quantity");
-        String offerIdStr = request.getParameter("offer_id");
-        
-        if (productIdStr == null || productIdStr.isEmpty()) {
-            sendError(response, "商品IDが必要です");
-            return;
-        }
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        
-        try {
-            int productId = Integer.parseInt(productIdStr);
-            int quantity = quantityStr != null ? Integer.parseInt(quantityStr) : 1;
-            
-            // Validate quantity
-            if (quantity < 1) {
-                sendError(response, "数量は1以上である必要があります");
-                return;
-            }
-            
-            conn = DatabaseConnection.getConnection();
-            
-            double price;
-            int stockQuantity;
-            String status;
-            Integer offerId = null;
-            
-            if (offerIdStr != null && !offerIdStr.trim().isEmpty()) {
-                // Add via accepted offer - use offer price, allow reserved product
-                int oid = Integer.parseInt(offerIdStr);
-                String offerSql = "SELECT o.offer_price, o.product_id, p.stock_quantity, p.status " +
-                    "FROM offers o JOIN products p ON o.product_id = p.product_id " +
-                    "WHERE o.offer_id = ? AND o.buyer_id = ? AND o.status = 'accepted'";
-                stmt = conn.prepareStatement(offerSql);
-                stmt.setInt(1, oid);
-                stmt.setInt(2, userId);
-                rs = stmt.executeQuery();
-                if (!rs.next()) {
-                    sendError(response, "オファーが見つからないか、承認されていません");
-                    return;
-                }
-                price = rs.getDouble("offer_price");
-                stockQuantity = rs.getInt("stock_quantity");
-                status = rs.getString("status");
-                if (!"reserved".equals(status) && !"available".equals(status)) {
-                    sendError(response, "この商品は現在購入できません");
-                    return;
-                }
-                offerId = oid;
-                rs.close();
-                stmt.close();
-            } else {
-                // Normal add - product must be available
-                String productSql = "SELECT price, stock_quantity, status FROM products WHERE product_id = ?";
-                stmt = conn.prepareStatement(productSql);
-                stmt.setInt(1, productId);
-                rs = stmt.executeQuery();
-                if (!rs.next()) {
-                    sendError(response, "商品が見つかりません");
-                    return;
-                }
-                price = rs.getDouble("price");
-                stockQuantity = rs.getInt("stock_quantity");
-                status = rs.getString("status");
-                if (!"available".equals(status)) {
-                    sendError(response, "この商品は現在購入できません");
-                    return;
+
+    private void show(Call call) throws IOException, SQLException {
+        List<Map<String, Object>> items = new ArrayList<>();
+        BigDecimal subtotal = BigDecimal.ZERO;
+        try (PreparedStatement stmt = call.db().prepareStatement(CART_SQL)) {
+            stmt.setInt(1, call.userId());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    BigDecimal lineTotal = rs.getBigDecimal("price_snapshot").multiply(BigDecimal.valueOf(rs.getInt("quantity")));
+                    subtotal = subtotal.add(lineTotal);
+                    items.add(toItem(rs, lineTotal));
                 }
             }
-            
-            if (stockQuantity < quantity) {
-                sendError(response, "在庫が不足しています");
-                return;
+        }
+        BigDecimal shipping = items.isEmpty() ? BigDecimal.ZERO : SHIPPING_ESTIMATE;
+        call.ok(Json.obj(
+                "items", items,
+                "subtotal", subtotal,
+                "shipping", shipping,
+                "total", subtotal.add(shipping),
+                "itemCount", items.size()));
+    }
+
+    /** Header badge. Anonymous visitors simply have an empty cart. */
+    private void count(Call call) throws IOException, SQLException {
+        if (call.optUserId() == null) {
+            call.ok(Json.obj("count", 0, "cartCount", 0));
+            return;
+        }
+        String sql = "SELECT COUNT(*) AS items, COALESCE(SUM(c.quantity), 0) AS units FROM carts c "
+                + "JOIN products p ON c.product_id = p.product_id WHERE c.user_id = ? AND " + ORDERABLE;
+        try (PreparedStatement stmt = call.db().prepareStatement(sql)) {
+            stmt.setInt(1, call.userId());
+            try (ResultSet rs = stmt.executeQuery()) {
+                rs.next();
+                call.ok(Json.obj("count", rs.getInt("items"), "cartCount", rs.getInt("units")));
             }
-            
-            if (rs != null) { rs.close(); rs = null; }
-            if (stmt != null) { stmt.close(); stmt = null; }
-            
-            // When adding via offer, remove any existing cart item (replace with offer price)
-            if (offerId != null) {
-                String deleteSql = "DELETE FROM carts WHERE user_id = ? AND product_id = ?";
-                stmt = conn.prepareStatement(deleteSql);
-                stmt.setInt(1, userId);
+        }
+    }
+
+    private void add(Call call) throws IOException, SQLException {
+        Integer quantity = call.param("quantity") == null ? Integer.valueOf(1) : call.intParam("quantity");
+        if (quantity == null || quantity < 1) {
+            call.error(SC_BAD_REQUEST, "数量は1以上である必要があります");
+            return;
+        }
+        Connection db = call.beginTransaction();
+
+        // With an accepted offer, the product and price both come from the offer, never from the request.
+        int productId;
+        BigDecimal price;
+        int stock;
+        if (call.param("offer_id") != null) {
+            Integer offerId = call.intParam("offer_id");
+            String sql = "SELECT o.product_id, o.offer_price, p.stock_quantity, p.status FROM offers o "
+                    + "JOIN products p ON o.product_id = p.product_id "
+                    + "WHERE o.offer_id = ? AND o.buyer_id = ? AND o.status = 'accepted'";
+            try (PreparedStatement stmt = db.prepareStatement(sql)) {
+                stmt.setInt(1, offerId == null ? -1 : offerId);
+                stmt.setInt(2, call.userId());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (!rs.next()) {
+                        call.error(SC_NOT_FOUND, "オファーが見つからないか、承認されていません");
+                        return;
+                    }
+                    String status = rs.getString("status");
+                    if (!"reserved".equals(status) && !"available".equals(status)) {
+                        call.error(SC_CONFLICT, "この商品は現在購入できません");
+                        return;
+                    }
+                    productId = rs.getInt("product_id");
+                    price = rs.getBigDecimal("offer_price");
+                    stock = rs.getInt("stock_quantity");
+                }
+            }
+            // The offer price replaces any earlier cart row for the same product.
+            try (PreparedStatement stmt = db.prepareStatement("DELETE FROM carts WHERE user_id = ? AND product_id = ?")) {
+                stmt.setInt(1, call.userId());
                 stmt.setInt(2, productId);
                 stmt.executeUpdate();
-                stmt.close();
-                stmt = null;
             }
-            
-            // Check if item already in cart
-            String checkSql = "SELECT cart_id, quantity FROM carts WHERE user_id = ? AND product_id = ?";
-            stmt = conn.prepareStatement(checkSql);
-            stmt.setInt(1, userId);
+        } else {
+            Integer requested = call.intParam("productId") != null ? call.intParam("productId") : call.intParam("product_id");
+            if (requested == null) {
+                call.error(SC_BAD_REQUEST, "商品IDが必要です");
+                return;
+            }
+            try (PreparedStatement stmt = db.prepareStatement(
+                    "SELECT price, stock_quantity, status FROM products WHERE product_id = ?")) {
+                stmt.setInt(1, requested);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (!rs.next()) {
+                        call.error(SC_NOT_FOUND, "商品が見つかりません");
+                        return;
+                    }
+                    if (!"available".equals(rs.getString("status"))) {
+                        call.error(SC_CONFLICT, "この商品は現在購入できません");
+                        return;
+                    }
+                    productId = requested;
+                    price = rs.getBigDecimal("price");
+                    stock = rs.getInt("stock_quantity");
+                }
+            }
+        }
+
+        int existing = 0;
+        try (PreparedStatement stmt = db.prepareStatement(
+                "SELECT quantity FROM carts WHERE user_id = ? AND product_id = ? FOR UPDATE")) {
+            stmt.setInt(1, call.userId());
             stmt.setInt(2, productId);
-            rs = stmt.executeQuery();
-            
-            Map<String, Object> result = new HashMap<>();
-            
-            if (rs.next()) {
-                // Update existing cart item
-                int cartId = rs.getInt("cart_id");
-                int existingQuantity = rs.getInt("quantity");
-                int newQuantity = existingQuantity + quantity;
-                
-                if (newQuantity > stockQuantity) {
-                    sendError(response, "在庫が不足しています");
-                    return;
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    existing = rs.getInt(1);
                 }
-                
-                String updateSql = "UPDATE carts SET quantity = ?, updated_at = NOW() WHERE cart_id = ?";
-                stmt = conn.prepareStatement(updateSql);
+            }
+        }
+        int newQuantity = existing + quantity;
+        if (newQuantity > stock) {
+            call.error(SC_CONFLICT, "在庫が不足しています");
+            return;
+        }
+        if (existing > 0) {
+            try (PreparedStatement stmt = db.prepareStatement(
+                    "UPDATE carts SET quantity = ?, updated_at = NOW() WHERE user_id = ? AND product_id = ?")) {
                 stmt.setInt(1, newQuantity);
-                stmt.setInt(2, cartId);
-                int rowsAffected = stmt.executeUpdate();
-                
-                if (rowsAffected > 0) {
-                    // Log cart activity
-                    logCartActivity(userId, productId, "update", newQuantity);
-                    
-                    result.put("success", true);
-                    result.put("message", "カートを更新しました");
-                    result.put("quantity", newQuantity);
-                } else {
-                    result.put("success", false);
-                    result.put("message", "カートの更新に失敗しました");
-                }
-            } else {
-                // Add new item to cart (price_snapshot stores offer price when adding via offer)
-                String insertSql = "INSERT INTO carts (user_id, product_id, quantity, price_snapshot, added_at) VALUES (?, ?, ?, ?, NOW())";
-                stmt = conn.prepareStatement(insertSql);
-                stmt.setInt(1, userId);
+                stmt.setInt(2, call.userId());
+                stmt.setInt(3, productId);
+                stmt.executeUpdate();
+            }
+        } else {
+            try (PreparedStatement stmt = db.prepareStatement(
+                    "INSERT INTO carts (user_id, product_id, quantity, price_snapshot) VALUES (?, ?, ?, ?)")) {
+                stmt.setInt(1, call.userId());
                 stmt.setInt(2, productId);
                 stmt.setInt(3, quantity);
-                stmt.setDouble(4, price);
-                int rowsAffected = stmt.executeUpdate();
-                
-                if (rowsAffected > 0) {
-                    // Log cart activity
-                    logCartActivity(userId, productId, "add", quantity);
-                    
-                    result.put("success", true);
-                    result.put("message", "カートに追加しました");
-                    result.put("quantity", quantity);
-                } else {
-                    result.put("success", false);
-                    result.put("message", "カートへの追加に失敗しました");
-                }
+                stmt.setBigDecimal(4, price);
+                stmt.executeUpdate();
             }
-            
-            sendJsonResponse(response, result);
-            
-        } catch (NumberFormatException e) {
-            sendError(response, "無効な数値形式です");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendError(response, "データベースエラー: " + e.getMessage());
-        } finally {
-            DatabaseConnection.closeResources(rs, stmt, conn);
         }
+        logCart(db, call.userId(), productId, existing > 0 ? "update" : "add", newQuantity);
+        db.commit();
+        call.ok(Json.obj("success", true,
+                "message", existing > 0 ? "カートを更新しました" : "カートに追加しました",
+                "quantity", newQuantity));
     }
-    
-    // ==================== UPDATE CART ITEM ====================
-    private void updateCartItem(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        
-        HttpSession session = request.getSession(false);
-        Integer userId = getSessionUserId(session);
-        if (session == null || userId == null) {
-            sendError(response, "ログインが必要です");
+
+    private void update(Call call) throws IOException, SQLException {
+        if (call.param("quantity") == null) {
+            call.error(SC_BAD_REQUEST, "数量が必要です");
             return;
         }
-        
-        String cartIdStr = request.getParameter("cartId");
-        String productIdStr = request.getParameter("productId");
-        String quantityStr = request.getParameter("quantity");
-        
-        if (quantityStr == null || quantityStr.isEmpty()) {
-            sendError(response, "数量が必要です");
+        Integer quantity = call.intParam("quantity");
+        if (quantity == null || quantity < 1) {
+            call.error(SC_BAD_REQUEST, "数量は1以上である必要があります");
             return;
         }
-        
-        // Support both cartId and productId
-        boolean useProductId = (cartIdStr == null || cartIdStr.isEmpty()) && (productIdStr != null && !productIdStr.isEmpty());
-        
-        if (!useProductId && (cartIdStr == null || cartIdStr.isEmpty())) {
-            sendError(response, "カートIDまたは商品IDが必要です");
+        CartRow row = findRow(call);
+        if (row == null) {
             return;
         }
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        
-        try {
-            int quantity = Integer.parseInt(quantityStr);
-            
-            if (quantity < 1) {
-                sendError(response, "数量は1以上である必要があります");
-                return;
-            }
-            
-            conn = DatabaseConnection.getConnection();
-            
-            int cartId;
-            int productId;
-            int stockQuantity;
-            String status;
-            
-            if (useProductId) {
-                // Find cart by productId
-                int productIdInt = Integer.parseInt(productIdStr);
-                String findSql = "SELECT c.cart_id, p.stock_quantity, p.status FROM carts c INNER JOIN products p ON c.product_id = p.product_id WHERE c.product_id = ? AND c.user_id = ?";
-                stmt = conn.prepareStatement(findSql);
-                stmt.setInt(1, productIdInt);
-                stmt.setInt(2, userId);
-                ResultSet rs = stmt.executeQuery();
-                
-                if (!rs.next()) {
-                    sendError(response, "カートアイテムが見つかりません");
-                    return;
-                }
-                
-                cartId = rs.getInt("cart_id");
-                productId = productIdInt;
-                stockQuantity = rs.getInt("stock_quantity");
-                status = rs.getString("status");
-                rs.close();
-                stmt.close();
-            } else {
-                cartId = Integer.parseInt(cartIdStr);
-                // Check if cart item belongs to user and get product info
-                String checkSql = """
-                    SELECT p.product_id, p.stock_quantity, p.status 
-                    FROM carts c 
-                    INNER JOIN products p ON c.product_id = p.product_id 
-                    WHERE c.cart_id = ? AND c.user_id = ?
-                    """;
-                stmt = conn.prepareStatement(checkSql);
-                stmt.setInt(1, cartId);
-                stmt.setInt(2, userId);
-                ResultSet rs = stmt.executeQuery();
-                
-                if (!rs.next()) {
-                    sendError(response, "カートアイテムが見つかりません");
-                    return;
-                }
-                
-                productId = rs.getInt("product_id");
-                stockQuantity = rs.getInt("stock_quantity");
-                status = rs.getString("status");
-                rs.close();
-                stmt.close();
-            }
-            
-            if (!"available".equals(status) && !"reserved".equals(status)) {
-                sendError(response, "この商品は現在購入できません");
-                return;
-            }
-            
-            if (quantity > stockQuantity) {
-                sendError(response, "在庫が不足しています");
-                return;
-            }
-            
-            // Update cart item
-            String updateSql = "UPDATE carts SET quantity = ?, updated_at = NOW() WHERE cart_id = ? AND user_id = ?";
-            stmt = conn.prepareStatement(updateSql);
+        if (!"available".equals(row.status()) && !"reserved".equals(row.status())) {
+            call.error(SC_CONFLICT, "この商品は現在購入できません");
+            return;
+        }
+        if (quantity > row.stock()) {
+            call.error(SC_CONFLICT, "在庫が不足しています");
+            return;
+        }
+        try (PreparedStatement stmt = call.db().prepareStatement(
+                "UPDATE carts SET quantity = ?, updated_at = NOW() WHERE cart_id = ? AND user_id = ?")) {
             stmt.setInt(1, quantity);
-            stmt.setInt(2, cartId);
-            stmt.setInt(3, userId);
-            int rowsAffected = stmt.executeUpdate();
-            
-            Map<String, Object> result = new HashMap<>();
-            
-            if (rowsAffected > 0) {
-                // Log cart activity
-                logCartActivity(userId, productId, "update", quantity);
-                
-                result.put("success", true);
-                result.put("message", "カートを更新しました");
-            } else {
-                result.put("success", false);
-                result.put("message", "カートの更新に失敗しました");
-            }
-            
-            sendJsonResponse(response, result);
-            
-        } catch (NumberFormatException e) {
-            sendError(response, "無効な数値形式です");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendError(response, "データベースエラー: " + e.getMessage());
-        } finally {
-            DatabaseConnection.closeResources(null, stmt, conn);
+            stmt.setInt(2, row.cartId());
+            stmt.setInt(3, call.userId());
+            stmt.executeUpdate();
         }
+        logCart(call.db(), call.userId(), row.productId(), "update", quantity);
+        call.ok(Json.obj("success", true, "message", "カートを更新しました"));
     }
-    
-    // ==================== REMOVE FROM CART ====================
-    private void removeFromCart(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        
-        HttpSession session = request.getSession(false);
-        Integer userId = getSessionUserId(session);
-        if (session == null || userId == null) {
-            sendError(response, "ログインが必要です");
+
+    private void remove(Call call) throws IOException, SQLException {
+        CartRow row = findRow(call);
+        if (row == null) {
             return;
         }
-        
-        String cartIdStr = request.getParameter("cartId");
-        String productIdStr = request.getParameter("productId");
-        
-        // Support both cartId and productId
-        boolean useProductId = (cartIdStr == null || cartIdStr.isEmpty()) && (productIdStr != null && !productIdStr.isEmpty());
-        
-        if (!useProductId && (cartIdStr == null || cartIdStr.isEmpty())) {
-            sendError(response, "カートIDまたは商品IDが必要です");
-            return;
+        try (PreparedStatement stmt = call.db().prepareStatement("DELETE FROM carts WHERE cart_id = ? AND user_id = ?")) {
+            stmt.setInt(1, row.cartId());
+            stmt.setInt(2, call.userId());
+            stmt.executeUpdate();
         }
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        
-        try {
-            int cartId;
-            int productId = 0;
-            int quantity = 0;
-            
-            conn = DatabaseConnection.getConnection();
-            
-            if (useProductId) {
-                // Find cart by productId
-                int productIdInt = Integer.parseInt(productIdStr);
-                String findSql = "SELECT cart_id, quantity FROM carts WHERE product_id = ? AND user_id = ?";
-                stmt = conn.prepareStatement(findSql);
-                stmt.setInt(1, productIdInt);
-                stmt.setInt(2, userId);
-                ResultSet rs = stmt.executeQuery();
-                
+        logCart(call.db(), call.userId(), row.productId(), "remove", row.quantity());
+        call.ok(Json.obj("success", true, "message", "カートから削除しました"));
+    }
+
+    private void clear(Call call) throws IOException, SQLException {
+        Connection db = call.beginTransaction();
+        List<int[]> removed = new ArrayList<>();
+        try (PreparedStatement stmt = db.prepareStatement("SELECT product_id, quantity FROM carts WHERE user_id = ?")) {
+            stmt.setInt(1, call.userId());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    removed.add(new int[] {rs.getInt(1), rs.getInt(2)});
+                }
+            }
+        }
+        try (PreparedStatement stmt = db.prepareStatement("DELETE FROM carts WHERE user_id = ?")) {
+            stmt.setInt(1, call.userId());
+            stmt.executeUpdate();
+        }
+        for (int[] item : removed) {
+            logCart(db, call.userId(), item[0], "remove", item[1]);
+        }
+        db.commit();
+        call.ok(Json.obj("success", true,
+                "message", removed.isEmpty() ? "カートは既に空です" : "カートを空にしました",
+                "count", removed.size()));
+    }
+
+    /** The user's cart row, addressed by cartId or productId. Sends the error response and returns null if absent. */
+    private static CartRow findRow(Call call) throws IOException, SQLException {
+        if (call.param("cartId") == null && call.param("productId") == null) {
+            call.error(SC_BAD_REQUEST, "カートIDまたは商品IDが必要です");
+            return null;
+        }
+        Integer cartId = call.intParam("cartId");
+        Integer productId = call.intParam("productId");
+        if (cartId == null && productId == null) {
+            call.error(SC_BAD_REQUEST, "無効な数値形式です");
+            return null;
+        }
+        String key = cartId != null ? "c.cart_id" : "c.product_id";
+        String sql = "SELECT c.cart_id, c.product_id, c.quantity, p.stock_quantity, p.status FROM carts c "
+                + "JOIN products p ON c.product_id = p.product_id WHERE " + key + " = ? AND c.user_id = ?";
+        try (PreparedStatement stmt = call.db().prepareStatement(sql)) {
+            stmt.setInt(1, cartId != null ? cartId : productId);
+            stmt.setInt(2, call.userId());
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
-                    sendError(response, "カートアイテムが見つかりません");
-                    return;
+                    call.error(SC_NOT_FOUND, "カートアイテムが見つかりません");
+                    return null;
                 }
-                
-                cartId = rs.getInt("cart_id");
-                productId = productIdInt;
-                quantity = rs.getInt("quantity");
-                rs.close();
-                stmt.close();
-            } else {
-                cartId = Integer.parseInt(cartIdStr);
-                // Get product info before deletion for logging
-                String selectSql = "SELECT product_id, quantity FROM carts WHERE cart_id = ? AND user_id = ?";
-                stmt = conn.prepareStatement(selectSql);
-                stmt.setInt(1, cartId);
-                stmt.setInt(2, userId);
-                ResultSet rs = stmt.executeQuery();
-                
-                if (rs.next()) {
-                    productId = rs.getInt("product_id");
-                    quantity = rs.getInt("quantity");
-                }
-                rs.close();
-                stmt.close();
+                return new CartRow(rs.getInt("cart_id"), rs.getInt("product_id"), rs.getInt("quantity"),
+                        rs.getInt("stock_quantity"), rs.getString("status"));
             }
-            
-            String deleteSql = "DELETE FROM carts WHERE cart_id = ? AND user_id = ?";
-            stmt = conn.prepareStatement(deleteSql);
-            stmt.setInt(1, cartId);
-            stmt.setInt(2, userId);
-            int rowsAffected = stmt.executeUpdate();
-            
-            Map<String, Object> result = new HashMap<>();
-            
-            if (rowsAffected > 0) {
-                // Log cart activity
-                logCartActivity(userId, productId, "remove", quantity);
-                
-                result.put("success", true);
-                result.put("message", "カートから削除しました");
-            } else {
-                result.put("success", false);
-                result.put("message", "削除に失敗しました");
-            }
-            
-            sendJsonResponse(response, result);
-            
-        } catch (NumberFormatException e) {
-            sendError(response, "Invalid cart ID format");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendError(response, "Database error: " + e.getMessage());
-        } finally {
-            DatabaseConnection.closeResources(null, stmt, conn);
         }
     }
-    
-    // ==================== CLEAR CART ====================
-    private void clearCart(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        
-        HttpSession session = request.getSession(false);
-        Integer userId = getSessionUserId(session);
-        if (session == null || userId == null) {
-            sendError(response, "ログインが必要です");
-            return;
-        }
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        
-        try {
-            conn = DatabaseConnection.getConnection();
-            
-            // Get all cart items for logging
-            String selectSql = "SELECT product_id, quantity FROM carts WHERE user_id = ?";
-            stmt = conn.prepareStatement(selectSql);
-            stmt.setInt(1, userId);
-            ResultSet rs = stmt.executeQuery();
-            
-            List<Map<String, Object>> cartItems = new ArrayList<>();
-            while (rs.next()) {
-                Map<String, Object> item = new HashMap<>();
-                item.put("product_id", rs.getInt("product_id"));
-                item.put("quantity", rs.getInt("quantity"));
-                cartItems.add(item);
-            }
-            rs.close();
-            stmt.close();
-            
-            // Delete all cart items
-            String deleteSql = "DELETE FROM carts WHERE user_id = ?";
-            stmt = conn.prepareStatement(deleteSql);
-            stmt.setInt(1, userId);
-            int rowsAffected = stmt.executeUpdate();
-            
-            Map<String, Object> result = new HashMap<>();
-            
-            if (rowsAffected > 0) {
-                // Log cart activity for each item
-                for (Map<String, Object> item : cartItems) {
-                    int productId = (Integer) item.get("product_id");
-                    int quantity = (Integer) item.get("quantity");
-                    logCartActivity(userId, productId, "remove", quantity);
-                }
-                
-                result.put("success", true);
-                result.put("message", "カートを空にしました");
-                result.put("count", rowsAffected);
-            } else {
-                result.put("success", true);
-                result.put("message", "カートは既に空です");
-                result.put("count", 0);
-            }
-            
-            sendJsonResponse(response, result);
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendError(response, "Database error: " + e.getMessage());
-        } finally {
-            DatabaseConnection.closeResources(null, stmt, conn);
-        }
+
+    private static void logCart(Connection db, int userId, int productId, String action, int quantity) throws SQLException {
+        JsonObject details = new JsonObject();
+        details.addProperty("action", action);
+        details.addProperty("product_id", productId);
+        details.addProperty("quantity", quantity);
+        ActivityLog.log(db, userId, "cart_" + action, "product", productId, details.toString());
     }
-    
-    // ==================== MAP CART ITEM FROM RESULTSET ====================
-    private Map<String, Object> mapCartItemFromResultSet(ResultSet rs) throws SQLException {
-        Map<String, Object> item = new HashMap<>();
-        
-        item.put("cart_id", rs.getInt("cart_id"));
-        item.put("quantity", rs.getInt("quantity"));
-        item.put("price_snapshot", rs.getDouble("price_snapshot"));
-        item.put("added_at", rs.getTimestamp("added_at"));
-        
-        item.put("product_id", rs.getInt("product_id"));
-        item.put("product_name", rs.getString("product_name"));
-        item.put("description", rs.getString("description"));
-        item.put("price", rs.getDouble("price"));
-        
-        double originalPrice = rs.getDouble("original_price");
-        item.put("original_price", rs.wasNull() ? null : originalPrice);
-        
-        item.put("discount_percentage", rs.getInt("discount_percentage"));
-        item.put("stock_quantity", rs.getInt("stock_quantity"));
-        item.put("status", rs.getString("status"));
-        item.put("image_url", rs.getString("image_url"));
-        item.put("is_rental", rs.getBoolean("is_rental"));
-        item.put("condition", rs.getString("condition"));
-        
-        double dailyPrice = rs.getDouble("rental_price_daily");
-        item.put("rental_price_daily", rs.wasNull() ? null : dailyPrice);
-        
-        double weeklyPrice = rs.getDouble("rental_price_weekly");
-        item.put("rental_price_weekly", rs.wasNull() ? null : weeklyPrice);
-        
-        double monthlyPrice = rs.getDouble("rental_price_monthly");
-        item.put("rental_price_monthly", rs.wasNull() ? null : monthlyPrice);
-        
-        item.put("seller_name", rs.getString("seller_name"));
-        item.put("seller_id", rs.getInt("seller_id"));
-        
-        // Calculate subtotal
-        double subtotal = rs.getDouble("price_snapshot") * rs.getInt("quantity");
-        item.put("subtotal", subtotal);
-        
-        return item;
-    }
-    
-    // ==================== UTILITY METHODS ====================
-    private void sendJsonResponse(HttpServletResponse response, Object data) throws IOException {
-        response.setStatus(HttpServletResponse.SC_OK);
-        PrintWriter out = response.getWriter();
-        out.print(gson.toJson(data));
-        out.flush();
-    }
-    
-    private void sendError(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        Map<String, Object> error = new HashMap<>();
-        error.put("success", false);
-        error.put("error", message);
-        PrintWriter out = response.getWriter();
-        out.print(gson.toJson(error));
-        out.flush();
+
+    private static Map<String, Object> toItem(ResultSet rs, BigDecimal lineTotal) throws SQLException {
+        return Json.obj(
+                "cart_id", rs.getInt("cart_id"),
+                "quantity", rs.getInt("quantity"),
+                "price_snapshot", rs.getBigDecimal("price_snapshot"),
+                "subtotal", lineTotal,
+                "added_at", rs.getTimestamp("added_at"),
+                "product_id", rs.getInt("product_id"),
+                "product_name", rs.getString("product_name"),
+                "description", rs.getString("description"),
+                "price", rs.getBigDecimal("price"),
+                "original_price", rs.getBigDecimal("original_price"),
+                "discount_percentage", rs.getInt("discount_percentage"),
+                "stock_quantity", rs.getInt("stock_quantity"),
+                "status", rs.getString("status"),
+                "image_url", rs.getString("image_url"),
+                "is_rental", rs.getBoolean("is_rental"),
+                "condition", rs.getString("condition"),
+                "rental_price_daily", rs.getBigDecimal("rental_price_daily"),
+                "rental_price_weekly", rs.getBigDecimal("rental_price_weekly"),
+                "rental_price_monthly", rs.getBigDecimal("rental_price_monthly"),
+                "seller_name", rs.getString("seller_name"),
+                "seller_id", rs.getInt("seller_id"));
     }
 }

@@ -1,13 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
-<%
-    if (currentUser == null) {
-        response.sendRedirect("login.jsp?redirect=notifications");
-        return;
-    }
-%>
-
-<main class="page-main py-4 notifications-page">
+<main id="main" class="page-main py-4 notifications-page">
     <div class="container-fluid px-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2 mb-0 fw-bold">

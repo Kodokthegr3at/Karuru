@@ -1,13 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
-<%
-    if (currentUser == null) {
-        response.sendRedirect("login.jsp?redirect=wallet");
-        return;
-    }
-%>
-
-<main class="page-main py-4 wallet-page">
+<main id="main" class="page-main py-4 wallet-page">
     <div class="container">
         <h1 class="fw-bold mb-4">
             <i class="bi bi-wallet2"></i> ウォレット

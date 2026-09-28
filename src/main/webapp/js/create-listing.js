@@ -31,28 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadCategories() {
     try {
-        // Try CategoryServlet first, fallback to ProductServlet if not available
-        let response = await fetch(`${window.CONTEXT_PATH}/CategoryServlet?action=getCategories`);
-        if (!response.ok && response.status === 404) {
-            console.log('CategoryServlet not found, trying ProductServlet as fallback...');
-            response = await fetch(`${window.CONTEXT_PATH}/ProductServlet?action=getCategories`);
-        }
-        if (!response.ok) {
-            throw new Error('Failed to load categories');
-        }
-        
-        let categories = [];
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            const data = await response.json();
-            categories = Array.isArray(data) ? data : (data.categories || data.data || []);
-        } else {
-            const text = await response.text();
-            categories = JSON.parse(text);
-            if (!Array.isArray(categories)) {
-                categories = categories.categories || categories.data || [];
-            }
-        }
+        const categories = await KaruruUtils.apiFetch(`${window.CONTEXT_PATH}/CategoryServlet?action=getCategories`);
         
         const select = document.getElementById('category');
         if (select && categories && categories.length > 0) {
@@ -620,24 +599,11 @@ async function handleSubmit(e) {
             // Don't set Content-Type header - browser will set it with boundary for multipart
         });
         
+        const result = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(result.error || `出品に失敗しました (HTTP ${response.status})`);
         }
-        
-        const contentType = response.headers.get('content-type');
-        let result = {};
-        
-        if (contentType && contentType.includes('application/json')) {
-            result = await response.json();
-        } else {
-            const text = await response.text();
-            try {
-                result = JSON.parse(text);
-            } catch (e) {
-                throw new Error('Failed to parse response');
-            }
-        }
-        
+
         if (result.success !== false) {
             if (successDiv) {
                 successDiv.textContent = result.message || '商品の出品が完了しました！';

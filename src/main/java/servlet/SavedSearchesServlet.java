@@ -1,285 +1,109 @@
 package servlet;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
-import util.DatabaseConnection;
-import util.FilterEncodingUTF8;
+import util.Json;
+import util.Params;
 
-/**
- * Servlet untuk handle saved searches
- * Note: Menggunakan tabel activity_logs dengan action 'search_saved' sebagai temporary solution
- * Idealnya perlu tabel saved_searches terpisah
- */
+/** Saved search conditions, stored in activity_logs (action = 'search_saved', details = JSON). */
 @WebServlet("/SavedSearchesServlet")
-public class SavedSearchesServlet extends HttpServlet {
+public class SavedSearchesServlet extends ApiServlet {
     private static final long serialVersionUID = 1L;
-    private static final Gson gson = new Gson();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        FilterEncodingUTF8.configureUTF8ForJSON(request, response);
-        
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user_id") == null) {
-            sendError(response, "ログインが必要です");
-            return;
-        }
-        
-        Integer userId = (Integer) session.getAttribute("user_id");
-        String action = request.getParameter("action");
-        
-        try {
-            if ("getSavedSearches".equals(action)) {
-                getSavedSearches(request, response, userId);
-            } else {
-                sendError(response, "Invalid action");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendError(response, "Server error: " + e.getMessage());
-        }
+    public SavedSearchesServlet() {
+        route("GET", "getSavedSearches", Access.USER, this::list);
+        route("POST", "saveSearch", Access.USER, this::save);
+        route("POST", "deleteSearch", Access.USER, this::delete);
+        route("POST", "clearAll", Access.USER, this::clearAll);
     }
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        FilterEncodingUTF8.configureUTF8ForJSON(request, response);
-        
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user_id") == null) {
-            sendError(response, "ログインが必要です");
-            return;
-        }
-        
-        Integer userId = (Integer) session.getAttribute("user_id");
-        String action = request.getParameter("action");
-        
-        try {
-            switch (action != null ? action : "") {
-                case "saveSearch":
-                    saveSearch(request, response, userId);
-                    break;
-                case "deleteSearch":
-                    deleteSearch(request, response, userId);
-                    break;
-                case "clearAll":
-                    clearAll(request, response, userId);
-                    break;
-                default:
-                    sendError(response, "Invalid action");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendError(response, "Server error: " + e.getMessage());
-        }
-    }
-    
-    // ==================== GET SAVED SEARCHES ====================
-    private void getSavedSearches(HttpServletRequest request, HttpServletResponse response, int userId) 
-            throws IOException {
-        
+
+    private void list(Call call) throws IOException, SQLException {
+        String sql = "SELECT log_id, details, created_at FROM activity_logs "
+                + "WHERE user_id = ? AND action = 'search_saved' AND entity_type = 'search' "
+                + "ORDER BY created_at DESC LIMIT 50";
         List<Map<String, Object>> searches = new ArrayList<>();
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        
-        try {
-            conn = DatabaseConnection.getConnection();
-            
-            // Get saved searches from activity_logs
-            String sql = """
-                SELECT log_id, details, created_at
-                FROM activity_logs
-                WHERE user_id = ? AND action = 'search_saved' AND entity_type = 'search'
-                ORDER BY created_at DESC
-                LIMIT 50
-                """;
-            
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, userId);
-            rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                Map<String, Object> search = new HashMap<>();
-                search.put("log_id", rs.getLong("log_id"));
-                search.put("details", rs.getString("details"));
-                search.put("created_at", rs.getTimestamp("created_at"));
-                searches.add(search);
+        try (PreparedStatement stmt = call.db().prepareStatement(sql)) {
+            stmt.setInt(1, call.userId());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    searches.add(Json.obj(
+                            "log_id", rs.getLong("log_id"),
+                            "details", rs.getString("details"),
+                            "created_at", rs.getTimestamp("created_at")));
+                }
             }
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("searches", searches);
-            result.put("count", searches.size());
-            
-            sendJsonResponse(response, result);
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendError(response, "Database error: " + e.getMessage());
-        } finally {
-            DatabaseConnection.closeResources(rs, stmt, conn);
         }
+        call.ok(Json.obj("success", true, "searches", searches, "count", searches.size()));
     }
-    
-    // ==================== SAVE SEARCH ====================
-    private void saveSearch(HttpServletRequest request, HttpServletResponse response, int userId) 
-            throws IOException {
-        
-        String searchQuery = request.getParameter("search_query");
-        String filters = request.getParameter("filters");
-        
-        if (searchQuery == null || searchQuery.trim().isEmpty()) {
-            sendError(response, "検索条件が必要です");
+
+    private void save(Call call) throws IOException, SQLException {
+        String query = call.param("search_query");
+        if (query == null) {
+            call.error(SC_BAD_REQUEST, "検索条件が必要です");
             return;
         }
-        
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        
-        try {
-            conn = DatabaseConnection.getConnection();
-            
-            String details = String.format("{\"query\": \"%s\", \"filters\": %s}", 
-                searchQuery.replace("\"", "\\\""), 
-                filters != null ? filters : "{}");
-            
-            String sql = """
-                INSERT INTO activity_logs 
-                (user_id, action, entity_type, details, ip_address, created_at)
-                VALUES (?, 'search_saved', 'search', ?, 'system', NOW())
-                """;
-            
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, userId);
-            stmt.setString(2, details);
-            
-            int rowsAffected = stmt.executeUpdate();
-            
-            if (rowsAffected > 0) {
-                Map<String, Object> result = new HashMap<>();
-                result.put("success", true);
-                result.put("message", "検索条件を保存しました");
-                
-                sendJsonResponse(response, result);
-            } else {
-                sendError(response, "検索条件の保存に失敗しました");
-            }
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendError(response, "Database error: " + e.getMessage());
-        } finally {
-            DatabaseConnection.closeResources(null, stmt, conn);
+        JsonObject details = new JsonObject();
+        details.addProperty("query", query);
+        details.add("filters", parseFilters(call.request.getParameter("filters")));
+
+        String sql = "INSERT INTO activity_logs (user_id, action, entity_type, details, ip_address) "
+                + "VALUES (?, 'search_saved', 'search', ?, 'system')";
+        try (PreparedStatement stmt = call.db().prepareStatement(sql)) {
+            stmt.setInt(1, call.userId());
+            stmt.setString(2, details.toString());
+            stmt.executeUpdate();
         }
+        call.ok(Json.obj("success", true, "message", "検索条件を保存しました"));
     }
-    
-    // ==================== DELETE SEARCH ====================
-    private void deleteSearch(HttpServletRequest request, HttpServletResponse response, int userId) 
-            throws IOException {
-        
-        String logIdParam = request.getParameter("log_id");
-        if (logIdParam == null || logIdParam.isEmpty()) {
-            sendError(response, "検索IDが必要です");
+
+    private void delete(Call call) throws IOException, SQLException {
+        Long logId = Params.optLong(call.request, "log_id");
+        if (logId == null) {
+            call.error(SC_BAD_REQUEST, "検索IDが必要です");
             return;
         }
-        
-        long logId = Long.parseLong(logIdParam);
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        
-        try {
-            conn = DatabaseConnection.getConnection();
-            
-            String sql = "DELETE FROM activity_logs WHERE log_id = ? AND user_id = ? AND action = 'search_saved'";
-            stmt = conn.prepareStatement(sql);
+        String sql = "DELETE FROM activity_logs WHERE log_id = ? AND user_id = ? AND action = 'search_saved'";
+        try (PreparedStatement stmt = call.db().prepareStatement(sql)) {
             stmt.setLong(1, logId);
-            stmt.setInt(2, userId);
-            
-            int rowsAffected = stmt.executeUpdate();
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", rowsAffected > 0);
-            result.put("message", rowsAffected > 0 ? "検索条件を削除しました" : "検索条件が見つかりません");
-            
-            sendJsonResponse(response, result);
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendError(response, "Database error: " + e.getMessage());
-        } finally {
-            DatabaseConnection.closeResources(null, stmt, conn);
+            stmt.setInt(2, call.userId());
+            boolean deleted = stmt.executeUpdate() > 0;
+            call.ok(Json.obj("success", deleted, "message", deleted ? "検索条件を削除しました" : "検索条件が見つかりません"));
         }
     }
-    
-    // ==================== CLEAR ALL ====================
-    private void clearAll(HttpServletRequest request, HttpServletResponse response, int userId) 
-            throws IOException {
-        
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        
+
+    private void clearAll(Call call) throws IOException, SQLException {
+        String sql = "DELETE FROM activity_logs WHERE user_id = ? AND action = 'search_saved' AND entity_type = 'search'";
+        try (PreparedStatement stmt = call.db().prepareStatement(sql)) {
+            stmt.setInt(1, call.userId());
+            int deleted = stmt.executeUpdate();
+            call.ok(Json.obj("success", true, "message", "すべての検索条件を削除しました", "deleted_count", deleted));
+        }
+    }
+
+    /** The filters parameter as JSON; anything missing or malformed becomes {}. */
+    private static JsonElement parseFilters(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return new JsonObject();
+        }
         try {
-            conn = DatabaseConnection.getConnection();
-            
-            String sql = "DELETE FROM activity_logs WHERE user_id = ? AND action = 'search_saved' AND entity_type = 'search'";
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, userId);
-            
-            int rowsAffected = stmt.executeUpdate();
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "すべての検索条件を削除しました");
-            result.put("deleted_count", rowsAffected);
-            
-            sendJsonResponse(response, result);
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendError(response, "Database error: " + e.getMessage());
-        } finally {
-            DatabaseConnection.closeResources(null, stmt, conn);
+            return JsonParser.parseString(raw);
+        } catch (JsonParseException e) {
+            return new JsonObject();
         }
-    }
-    
-    // ==================== UTILITY METHODS ====================
-    private void sendJsonResponse(HttpServletResponse response, Object data) throws IOException {
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        PrintWriter out = response.getWriter();
-        out.print(gson.toJson(data));
-        out.flush();
-    }
-    
-    private void sendError(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        Map<String, Object> error = new HashMap<>();
-        error.put("success", false);
-        error.put("error", message);
-        sendJsonResponse(response, error);
     }
 }
-

@@ -11,12 +11,15 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
     
+    <request-character-encoding>UTF-8</request-character-encoding>
+    <response-character-encoding>UTF-8</response-character-encoding>
+    
     <filter>
-        <filter-name>CharacterEncodingFilter</filter-name>
-        <filter-class>util.FilterEncodingUTF8</filter-class>
+        <filter-name>CsrfFilter</filter-name>
+        <filter-class>util.CsrfFilter</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>CharacterEncodingFilter</filter-name>
+        <filter-name>CsrfFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
     
@@ -36,8 +39,23 @@
         <url-pattern>/notifications.jsp</url-pattern>
         <url-pattern>/orders.jsp</url-pattern>
         <url-pattern>/create-listing.jsp</url-pattern>
+        <url-pattern>/garage.jsp</url-pattern>
+        <url-pattern>/recently-viewed.jsp</url-pattern>
+        <url-pattern>/offers.jsp</url-pattern>
+        <url-pattern>/rentals.jsp</url-pattern>
+        <url-pattern>/rental-detail.jsp</url-pattern>
+        <url-pattern>/order-detail.jsp</url-pattern>
+        <url-pattern>/orderconfirm.jsp</url-pattern>
+        <url-pattern>/settings.jsp</url-pattern>
         <url-pattern>/admin/*</url-pattern>
     </filter-mapping>
+    
+    <session-config>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
     
     <error-page>
         <error-code>404</error-code>

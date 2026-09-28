@@ -1,0 +1,21 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- Account menu items; used by the desktop account dropdown and the mobile account sheet. --%>
+<li><a class="dropdown-item" href="${ctx}/profile.jsp"><i class="bi bi-person"></i>プロフィール</a></li>
+<li><a class="dropdown-item" href="${ctx}/dashboard.jsp"><i class="bi bi-speedometer2"></i>ダッシュボード</a></li>
+<li><a class="dropdown-item" href="${ctx}/orders.jsp"><i class="bi bi-receipt"></i>注文履歴</a></li>
+<li><a class="dropdown-item" href="${ctx}/offers.jsp"><i class="bi bi-tag"></i>オファー</a></li>
+<li><a class="dropdown-item" href="${ctx}/rentals.jsp"><i class="bi bi-calendar-check"></i>レンタル履歴</a></li>
+<li><a class="dropdown-item" href="${ctx}/wallet.jsp"><i class="bi bi-wallet2"></i>ウォレット</a></li>
+<li><a class="dropdown-item" href="${ctx}/garage.jsp"><i class="bi bi-box-seam"></i>マイガレージ</a></li>
+<li><a class="dropdown-item" href="${ctx}/recently-viewed.jsp"><i class="bi bi-clock-history"></i>最近見た商品</a></li>
+<li><a class="dropdown-item" href="${ctx}/settings.jsp"><i class="bi bi-gear"></i>設定</a></li>
+<c:if test="${sessionScope.role == 'admin'}">
+<li><hr class="dropdown-divider"></li>
+<li><a class="dropdown-item" href="${ctx}/admin/dashboard.jsp"><i class="bi bi-shield-lock"></i>管理画面</a></li>
+</c:if>
+<li><hr class="dropdown-divider"></li>
+<li>
+    <form action="${ctx}/LogoutServlet" method="post">
+        <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right"></i>ログアウト</button>
+    </form>
+</li>

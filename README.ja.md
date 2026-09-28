@@ -36,7 +36,7 @@ Servlet のライフサイクル、フィルタチェーン、セッションに
 フィルタチェーン
   ├─ CsrfFilter      … クロスオリジンの POST/PUT/DELETE を拒否
   └─ SessionFilter   … 保護されたパスを制御（/dashboard.jsp、/admin/* など）
-  （リクエスト／レスポンスの UTF-8 エンコーディングは web.xml で設定）
+  （リクエスト／レスポンスの UTF-8 エンコーディングは META-INF/context.xml で設定）
   │
   ▼
 Servlet レイヤー（34 個）── 1 機能 1 Servlet。JSON API は ApiServlet を継承

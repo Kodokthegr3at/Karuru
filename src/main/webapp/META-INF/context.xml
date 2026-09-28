@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context>
+<!-- UTF-8 request/response encoding lives here, not in web.xml: Eclipse WTP's descriptor model
+     rejects the Servlet 4.0 <request-character-encoding> element (FeatureNotFoundException). -->
+<Context requestCharacterEncoding="UTF-8" responseCharacterEncoding="UTF-8">
     <!-- SameSite=Lax session cookie: browsers won't send it on cross-site POSTs (CSRF defense, see util.CsrfFilter) -->
     <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor" sameSiteCookies="lax"/>
 </Context>

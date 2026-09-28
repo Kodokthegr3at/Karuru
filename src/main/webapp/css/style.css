@@ -11,47 +11,114 @@
 
 /* 1. Tokens and Bootstrap theme ------------------------------------------------------------ */
 
+/*
+ * Two themes share one set of names. Light is the default; dark is selected by data-bs-theme="dark" on
+ * <html>, which the inline script in includes/header.jsp sets before first paint (saved choice, else the
+ * OS setting). Components only ever use these tokens, so a new colour belongs here, in both blocks.
+ *
+ * Brand is 藍 (ai, Japanese indigo); the yellow "sticker" is the price-sticker on second-hand goods and is
+ * reserved for price/deal marks (negotiable, rental, discount).
+ */
 :root {
-    --ink: #1c1d21;
-    --ink-muted: #5d626c;
-    --ink-subtle: #8b909a;
-    --canvas: #f5f5f3;
+    color-scheme: light;
+    --ink: #171a23;
+    --ink-muted: #585e6e;
+    --ink-subtle: #7e8494;
+    --canvas: #f3f4f6;
     --surface: #ffffff;
-    --surface-muted: #f0f0ed;
-    --line: #e3e3de;
-    --brand: #1f6fd6;
-    --brand-hover: #185bb2;
-    --brand-soft: #e8f0fc;
-    --danger: #c93434;
-    --success: #1f7a4d;
+    --surface-muted: #eceef2;
+    --line: #e0e3ea;
+    --line-strong: #c6cbd6;
+    --brand: #2e45a8;
+    --brand-rgb: 46, 69, 168;
+    --brand-hover: #24388c;
+    --brand-soft: #e7eaf8;
+    --brand-contrast: #ffffff;
+    --sticker: #ffd23f;
+    --sticker-ink: #332800;
+    --danger: #c8313f;
+    --danger-rgb: 200, 49, 63;
+    --danger-soft: #fbe6e8;
+    --success: #1d7a4c;
+    --success-rgb: 29, 122, 76;
+    --success-soft: #e2f3ea;
     --warning: #9a6200;
+    --warning-soft: #fbf0dc;
+    --overlay: rgba(15, 19, 34, 0.55);
+    --tag-bg: rgba(255, 255, 255, 0.94);
+    --shadow-pop: 0 8px 24px rgba(15, 19, 34, 0.12);
 
     --radius-sm: 6px;
     --radius: 10px;
-    --shadow-pop: 0 8px 24px rgba(20, 22, 26, 0.12);
     --header-height: 60px;
     --tab-bar-height: 58px;
+    --font-display: "Zen Kaku Gothic New", "Noto Sans JP", system-ui, sans-serif;
+
+    /* Old names still used by some page scripts and inline styles */
+    --text-color: var(--ink);
+    --text-muted: var(--ink-muted);
+    --border-color: var(--line);
+    --border-light: var(--line);
+    --card-bg: var(--surface);
+    --bg-secondary: var(--surface-muted);
+    --primary-color: var(--brand);
 
     --bs-body-font-family: "Noto Sans JP", system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", sans-serif;
     --bs-body-font-size: 0.9375rem;
     --bs-body-line-height: 1.65;
     --bs-body-color: var(--ink);
     --bs-body-bg: var(--canvas);
+    --bs-emphasis-color: var(--ink);
     --bs-secondary-color: var(--ink-muted);
+    --bs-tertiary-color: var(--ink-subtle);
+    --bs-secondary-bg: var(--surface-muted);
+    --bs-tertiary-bg: var(--surface-muted);
     --bs-border-color: var(--line);
     --bs-border-radius: var(--radius-sm);
     --bs-border-radius-lg: var(--radius);
     --bs-primary: var(--brand);
-    --bs-primary-rgb: 31, 111, 214;
+    --bs-primary-rgb: var(--brand-rgb);
     --bs-danger: var(--danger);
-    --bs-danger-rgb: 201, 52, 52;
+    --bs-danger-rgb: var(--danger-rgb);
     --bs-success: var(--success);
-    --bs-success-rgb: 31, 122, 77;
+    --bs-success-rgb: var(--success-rgb);
     --bs-link-color: var(--brand);
-    --bs-link-color-rgb: 31, 111, 214;
+    --bs-link-color-rgb: var(--brand-rgb);
     --bs-link-hover-color: var(--brand-hover);
-    --bs-link-hover-color-rgb: 24, 91, 178;
-    --bs-focus-ring-color: rgba(31, 111, 214, 0.3);
+    --bs-link-hover-color-rgb: var(--brand-rgb);
+    --bs-focus-ring-color: rgba(var(--brand-rgb), 0.3);
+    --bs-primary-bg-subtle: var(--brand-soft);
+    --bs-primary-border-subtle: rgba(var(--brand-rgb), 0.35);
+    --bs-primary-text-emphasis: var(--brand);
+}
+
+/* Indigo night, not neutral black: surfaces keep the brand's blue cast. */
+:root[data-bs-theme="dark"] {
+    color-scheme: dark;
+    --ink: #e7e9f1;
+    --ink-muted: #a6abbe;
+    --ink-subtle: #868ca3;
+    --canvas: #0f1322;
+    --surface: #171c2e;
+    --surface-muted: #20263b;
+    --line: #2a3149;
+    --line-strong: #3d4565;
+    --brand: #8ea0f5;
+    --brand-rgb: 142, 160, 245;
+    --brand-hover: #aab8f8;
+    --brand-soft: #232b4d;
+    --brand-contrast: #0f1322;
+    --danger: #ff7a86;
+    --danger-rgb: 255, 122, 134;
+    --danger-soft: #3d1a21;
+    --success: #5fd39a;
+    --success-rgb: 95, 211, 154;
+    --success-soft: #14352a;
+    --warning: #f0b44c;
+    --warning-soft: #3a2d12;
+    --overlay: rgba(5, 7, 14, 0.6);
+    --tag-bg: rgba(23, 28, 46, 0.92);
+    --shadow-pop: 0 10px 28px rgba(0, 0, 0, 0.45);
 }
 
 .btn {
@@ -65,6 +132,10 @@
 }
 
 .btn-primary {
+    --bs-btn-color: var(--brand-contrast);
+    --bs-btn-hover-color: var(--brand-contrast);
+    --bs-btn-active-color: var(--brand-contrast);
+    --bs-btn-disabled-color: var(--brand-contrast);
     --bs-btn-bg: var(--brand);
     --bs-btn-border-color: var(--brand);
     --bs-btn-hover-bg: var(--brand-hover);
@@ -77,6 +148,8 @@
 
 .btn-outline-primary {
     --bs-btn-color: var(--brand);
+    --bs-btn-hover-color: var(--brand-contrast);
+    --bs-btn-active-color: var(--brand-contrast);
     --bs-btn-border-color: var(--brand);
     --bs-btn-hover-bg: var(--brand);
     --bs-btn-hover-border-color: var(--brand);
@@ -88,10 +161,10 @@
     --bs-btn-border-color: var(--line);
     --bs-btn-hover-color: var(--ink);
     --bs-btn-hover-bg: var(--surface-muted);
-    --bs-btn-hover-border-color: #cfcfc9;
+    --bs-btn-hover-border-color: var(--line-strong);
     --bs-btn-active-color: var(--ink);
     --bs-btn-active-bg: var(--surface-muted);
-    --bs-btn-active-border-color: #cfcfc9;
+    --bs-btn-active-border-color: var(--line-strong);
     background: var(--surface);
 }
 
@@ -122,6 +195,14 @@
     box-shadow: var(--shadow-pop);
 }
 
+.accordion {
+    --bs-accordion-bg: var(--surface);
+    --bs-accordion-border-color: var(--line);
+    --bs-accordion-active-bg: var(--brand-soft);
+    --bs-accordion-active-color: var(--brand);
+    --bs-accordion-btn-focus-box-shadow: 0 0 0 0.25rem rgba(var(--brand-rgb), 0.25);
+}
+
 .modal {
     --bs-modal-border-color: var(--line);
     --bs-modal-border-radius: var(--radius);
@@ -131,11 +212,11 @@
 
 .form-control,
 .form-select {
-    border-color: #d6d6d0;
+    border-color: var(--line-strong);
 }
 
 .form-check-input {
-    border-color: #b3b3ac;
+    border-color: var(--line-strong);
 }
 
 .form-label {
@@ -194,6 +275,7 @@ body > main {
 
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: var(--font-display);
     font-weight: 700;
     letter-spacing: 0.01em;
 }
@@ -217,7 +299,7 @@ a {
     z-index: 2000;
     padding: 0.5rem 1rem;
     background: var(--ink);
-    color: #fff;
+    color: var(--canvas);
     border-radius: var(--radius-sm);
 }
 
@@ -226,6 +308,7 @@ a {
 }
 
 .price {
+    font-family: var(--font-display);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
@@ -256,6 +339,7 @@ a {
     align-items: center;
     gap: 0.5rem;
     color: var(--ink);
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 1.125rem;
 }
@@ -273,8 +357,23 @@ a {
     font-weight: 500;
 }
 
-.site-nav a:hover {
+.site-nav a {
+    position: relative;
+    padding-block: 0.25rem;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current="page"] {
     color: var(--ink);
+}
+
+.site-nav a[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 -0.35rem 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--brand);
 }
 
 .site-actions {
@@ -288,6 +387,26 @@ a {
     margin-inline: 0.5rem;
 }
 
+.brand,
+.site-actions .btn {
+    white-space: nowrap;
+}
+
+/* Phones: brand, theme switch and two auth buttons must share ~360px on one line. */
+@media (max-width: 575.98px) {
+    .site-header-inner {
+        gap: 0.5rem;
+    }
+
+    .site-actions .btn {
+        --bs-btn-padding-x: 0.75rem;
+    }
+
+    .site-actions .btn-primary {
+        margin-inline: 0.25rem 0;
+    }
+}
+
 .icon-link-btn {
     position: relative;
     display: inline-flex;
@@ -298,6 +417,12 @@ a {
     border-radius: 50%;
     color: var(--ink);
     font-size: 1.2rem;
+}
+
+button.icon-link-btn {
+    border: 0;
+    background: none;
+    padding: 0;
 }
 
 .icon-link-btn:hover {
@@ -318,7 +443,7 @@ a {
     padding: 0 5px;
     border-radius: 9px;
     background: var(--danger);
-    color: #fff;
+    color: var(--surface);
     font-size: 0.6875rem;
     font-weight: 700;
     line-height: 18px;
@@ -625,16 +750,36 @@ a {
     transform: scale(1.03);
 }
 
-.product-card-tag {
+/* A price sticker slapped on second-hand goods: slightly askew, solid colour, heavy type. */
+.product-card-tag,
+.product-card-discount {
     position: absolute;
-    left: 0.5rem;
     top: 0.5rem;
-    padding: 0.1rem 0.5rem;
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.92);
-    color: var(--ink);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: var(--sticker);
+    color: var(--sticker-ink);
+    font-family: var(--font-display);
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 700;
+    line-height: 1.5;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.product-card-tag {
+    left: 0.5rem;
+    transform: rotate(-2deg);
+}
+
+.product-card-tag-rental {
+    background: var(--brand);
+    color: var(--brand-contrast);
+}
+
+.product-card-discount {
+    right: 0.5rem;
+    transform: rotate(2deg);
+    font-variant-numeric: tabular-nums;
 }
 
 .product-card-status {
@@ -643,7 +788,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(28, 29, 33, 0.55);
+    background: var(--overlay);
     color: #fff;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -654,6 +799,8 @@ a {
 }
 
 .product-card-title {
+    font-family: var(--bs-body-font-family);
+    letter-spacing: normal;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -692,9 +839,9 @@ a {
     white-space: nowrap;
 }
 
-.status-success { background: #e3f3ea; color: var(--success); }
-.status-warning { background: #fbf0dc; color: var(--warning); }
-.status-danger  { background: #fbe6e6; color: var(--danger); }
+.status-success { background: var(--success-soft); color: var(--success); }
+.status-warning { background: var(--warning-soft); color: var(--warning); }
+.status-danger  { background: var(--danger-soft); color: var(--danger); }
 .status-info    { background: var(--brand-soft); color: var(--brand); }
 
 /* Small key figure: <div class="stat"><span class="stat-label">..</span><span class="stat-value">..</span></div> */
@@ -748,12 +895,22 @@ a {
 
 /* Home */
 .home-intro {
-    padding: 1.5rem 0 0.5rem;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
 }
 
 .home-intro h1 {
-    margin-bottom: 1rem;
-    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    margin-bottom: 0.5rem;
+    font-size: clamp(1.5rem, 4.2vw, 2.4rem);
+    line-height: 1.3;
+    text-wrap: balance;
+}
+
+.home-intro-lead {
+    margin-bottom: 1.25rem;
+    color: var(--ink-muted);
 }
 
 .home-search {
@@ -773,6 +930,12 @@ a {
     padding-left: 2.75rem;
     font-size: 1rem;
     border-radius: 999px;
+    border-width: 2px;
+    background: var(--canvas);
+}
+
+.home-search .form-control:focus {
+    border-color: var(--brand);
     background: var(--surface);
 }
 
@@ -1163,7 +1326,7 @@ fieldset.filter-group {
 }
 
 .seller-card:hover {
-    border-color: #cfcfc9;
+    border-color: var(--line-strong);
     color: var(--ink);
 }
 
@@ -1297,7 +1460,7 @@ fieldset.filter-group {
 
 .star-input label {
     font-size: 1.5rem;
-    color: #d6d6d0;
+    color: var(--line-strong);
     cursor: pointer;
 }
 
@@ -1734,12 +1897,12 @@ a.record-title:hover {
     height: 34px;
     border: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.92);
+    background: var(--tag-bg);
     color: var(--danger);
 }
 
 .card-corner-btn:hover {
-    background: #fff;
+    background: var(--surface);
 }
 
 /* Public profile */
@@ -1772,4 +1935,42 @@ a.record-title:hover {
     max-width: 640px;
     margin: 1rem 0 0;
     white-space: pre-wrap;
+}
+
+/* Notification filters: a scrollable row on phones instead of spilling off-screen */
+.notifications-filters {
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.notifications-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.notifications-filters .btn-group {
+    flex-wrap: nowrap;
+}
+
+.notifications-filters .btn {
+    white-space: nowrap;
+}
+
+/* The theme switch recolours everything at once; animate it only for people who allow motion. */
+@media (prefers-reduced-motion: no-preference) {
+    html.theme-switching,
+    html.theme-switching * {
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+    }
+}
+
+/* Wallet history filters: one scrollable row, never squeezed into vertical letters */
+.wallet-filter-group {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.wallet-filter-group .btn {
+    white-space: nowrap;
 }

@@ -1,13 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
 
-<main id="main" class="bg-dark text-light py-5">
+<main id="main">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <h1 class="fw-bold mb-4">利用規約</h1>
                 
-                <div class="card bg-black border-secondary">
+                <div class="card">
                     <div class="card-body">
                         <h3 class="mb-3">第1条（適用）</h3>
                         <p>本規約は、カルル（以下「当サイト」）の利用条件を定めるものです。登録ユーザーの皆さま（以下「ユーザー」）には、本規約に従って、当サイトをご利用いただきます。</p>

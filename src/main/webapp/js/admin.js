@@ -133,7 +133,7 @@ async function loadUsers() {
         if (users && users.length > 0) {
             container.innerHTML = `
                 <div class="table-responsive">
-                    <table class="table table-light table-striped table-hover mb-0">
+                    <table class="table table-striped table-hover mb-0">
                         <thead>
                             <tr>
                                 <th class="text-center fw-bold">ID</th>
@@ -183,7 +183,7 @@ async function loadUsers() {
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer bg-dark border-top border-secondary p-3">
+                <div class="card-footer border-top p-3">
                     <button class="btn btn-primary" onclick="showUserModal()">
                         <i class="bi bi-plus-circle me-2"></i>新しいユーザーを追加
                     </button>
@@ -231,7 +231,7 @@ async function loadProducts() {
         if (products && products.length > 0) {
             container.innerHTML = `
                 <div class="table-responsive">
-                    <table class="table table-light table-striped table-hover mb-0">
+                    <table class="table table-striped table-hover mb-0">
                         <thead>
                             <tr>
                                 <th class="text-center fw-bold">ID</th>
@@ -286,7 +286,7 @@ async function loadProducts() {
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer bg-dark border-top border-secondary p-3">
+                <div class="card-footer border-top p-3">
                     <button class="btn btn-success" onclick="showProductModal()">
                         <i class="bi bi-plus-circle me-2"></i>新しい商品を追加
                     </button>
@@ -335,7 +335,7 @@ async function loadOrders() {
         if (orders && orders.length > 0) {
             container.innerHTML = `
                 <div class="table-responsive">
-                    <table class="table table-light table-striped table-hover mb-0">
+                    <table class="table table-striped table-hover mb-0">
                         <thead>
                             <tr>
                                 <th class="fw-bold">注文番号</th>
@@ -392,7 +392,7 @@ async function loadOrders() {
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer bg-dark border-top border-secondary p-3">
+                <div class="card-footer border-top p-3">
                     <button class="btn btn-warning" onclick="showOrderModal()">
                         <i class="bi bi-plus-circle me-2"></i>新しい注文を追加
                     </button>
@@ -451,7 +451,7 @@ async function loadOffers() {
         if (offers && offers.length > 0) {
             container.innerHTML = `
                 <div class="table-responsive">
-                    <table class="table table-light table-striped table-hover mb-0">
+                    <table class="table table-striped table-hover mb-0">
                         <thead>
                             <tr>
                                 <th class="text-center fw-bold">ID</th>
@@ -515,7 +515,7 @@ async function loadOffers() {
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer bg-dark border-top border-secondary p-3">
+                <div class="card-footer border-top p-3">
                     <a href="${window.CONTEXT_PATH}/offers.jsp" class="btn btn-warning">
                         <i class="bi bi-hand-thumbs-up me-2"></i>オファー管理ページへ
                     </a>
@@ -593,8 +593,8 @@ async function loadCategories() {
          if (categories && categories.length > 0) {
              container.innerHTML = `
                  <div class="table-responsive">
-                     <table class="table table-light table-striped table-hover mb-0">
-                         <thead class="table-light">
+                     <table class="table table-striped table-hover mb-0">
+                         <thead class="">
                              <tr>
                                  <th class="text-center fw-bold" style="width: 80px;">画像</th>
                                  <th class="text-center fw-bold">ID</th>
@@ -675,7 +675,7 @@ async function loadCategories() {
                          </tbody>
                      </table>
                  </div>
-                 <div class="card-footer bg-dark border-top border-secondary p-3">
+                 <div class="card-footer border-top p-3">
                      <button class="btn btn-primary" onclick="showAddCategoryModal()">
                          <i class="bi bi-plus-circle me-2"></i>新しいカテゴリーを追加
                      </button>
@@ -1000,7 +1000,7 @@ function showUserModal(user = null) {
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">メール *</label>
-                                <input type="email" class="form-control bg-dark text-light border-secondary" 
+                                <input type="email" class="form-control" 
                                        id="email" name="email" value="${user?.email || ''}" required>
                             </div>
                             <div class="mb-3">
@@ -1457,8 +1457,8 @@ async function loadActivityLogs() {
         if (logs && logs.length > 0) {
             container.innerHTML = `
                 <div class="table-responsive">
-                    <table class="table table-light table-striped table-hover">
-                         <thead class="table-light">
+                    <table class="table table-striped table-hover">
+                         <thead class="">
                             <tr>
                                  <th class="fw-bold">日時</th>
                                  <th class="fw-bold">ユーザー</th>

@@ -1,16 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="includes/header.jsp" %>
 
-<main id="main" class="bg-dark text-light py-5">
+<main id="main">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <h1 class="fw-bold mb-4">よくある質問（FAQ）</h1>
                 
                 <div class="accordion" id="faqAccordion">
-                    <div class="accordion-item bg-black border-secondary">
+                    <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
                                 アカウントの作成方法は？
                             </button>
                         </h2>
@@ -21,9 +21,9 @@
                         </div>
                     </div>
                     
-                    <div class="accordion-item bg-black border-secondary">
+                    <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
                                 商品を出品するには？
                             </button>
                         </h2>
@@ -34,9 +34,9 @@
                         </div>
                     </div>
                     
-                    <div class="accordion-item bg-black border-secondary">
+                    <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
                                 支払い方法は？
                             </button>
                         </h2>
@@ -47,9 +47,9 @@
                         </div>
                     </div>
                     
-                    <div class="accordion-item bg-black border-secondary">
+                    <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
                                 返品・交換は可能ですか？
                             </button>
                         </h2>
@@ -60,9 +60,9 @@
                         </div>
                     </div>
                     
-                    <div class="accordion-item bg-black border-secondary">
+                    <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
                                 トラブルが発生した場合は？
                             </button>
                         </h2>

@@ -8,11 +8,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <%-- Runs before any CSS so a dark-mode visitor never sees a white flash. Saved choice wins, else the OS setting. --%>
+    <script>
+        (function () {
+            var theme;
+            try { theme = localStorage.getItem('karuru-theme'); } catch (e) {}
+            if (theme !== 'light' && theme !== 'dark') {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
     <title><c:if test="${not empty pageTitle}"><c:out value="${pageTitle}"/> | </c:if>カルル</title>
     <link rel="icon" type="image/png" href="${ctx}/img/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@700&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${ctx}/css/style.css">
@@ -41,6 +53,9 @@
         </nav>
 
         <div class="site-actions">
+            <button class="icon-link-btn theme-toggle" type="button" data-theme-toggle aria-label="ダークモードに切り替え" title="ダークモードに切り替え">
+                <i class="bi bi-moon-stars" aria-hidden="true"></i>
+            </button>
             <c:choose>
                 <c:when test="${signedIn}">
                     <a class="icon-link-btn d-none d-lg-inline-flex" href="${ctx}/favorites.jsp" aria-label="お気に入り">

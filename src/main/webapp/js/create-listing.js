@@ -139,7 +139,7 @@ function addImagePreview(file) {
         
         previewItem.innerHTML = `
             <div class="position-relative">
-                <img src="${e.target.result}" alt="Preview" class="img-thumbnail w-100" style="height: 150px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                <img src="${e.target.result}" alt="Preview" class="img-thumbnail w-100" style="height: 150px; object-fit: cover; border: 1px solid var(--line);">
                 <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1" 
                         onclick="removeImage('${file.name.replace(/'/g, "\\'")}')" title="削除">
                     <i class="bi bi-x"></i>
@@ -326,9 +326,9 @@ function addSpecification() {
     const specItem = document.createElement('div');
     specItem.className = 'specification-item d-flex gap-2 mb-2';
     specItem.innerHTML = `
-        <input type="text" class="form-control bg-dark border-secondary text-light spec-name" 
+        <input type="text" class="form-control spec-name" 
                placeholder="仕様名（例: ブランド）">
-        <input type="text" class="form-control bg-dark border-secondary text-light spec-value" 
+        <input type="text" class="form-control spec-value" 
                placeholder="値（例: Apple）">
         <button type="button" class="btn btn-outline-danger" onclick="removeSpecification(this)">×</button>
     `;

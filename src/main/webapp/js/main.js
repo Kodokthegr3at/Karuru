@@ -221,12 +221,14 @@ KaruruUtils.productCard = function(product) {
     const rental = product.is_rental ? KaruruUtils.rentalRate(product) : '';
     const unavailable = product.is_available === false || (product.status && product.status !== 'available');
     const tag = product.is_rental ? 'レンタル可' : (product.is_negotiable ? '値下げ交渉可' : '');
+    const discount = !product.is_rental && Number(product.discount_percentage) > 0 ? Number(product.discount_percentage) : 0;
     return `
         <a class="product-card" href="${window.CONTEXT_PATH}/product-detail.jsp?id=${product.product_id}">
             <div class="product-card-media">
                 <img src="${KaruruUtils.resolveProductImageUrl(image)}" alt="" loading="lazy"
                      onerror="KaruruUtils.imageFallback(this)">
-                ${tag ? `<span class="product-card-tag">${tag}</span>` : ''}
+                ${tag ? `<span class="product-card-tag${product.is_rental ? ' product-card-tag-rental' : ''}">${tag}</span>` : ''}
+                ${discount ? `<span class="product-card-discount">${discount}%OFF</span>` : ''}
                 ${unavailable ? `<span class="product-card-status">${escapeHtml(product.status_text || '販売停止')}</span>` : ''}
             </div>
             <div class="product-card-body">
@@ -369,7 +371,7 @@ window.initWebSockets = function() {
     }
 };
 
-/** Marks the current page in the mobile tab bar. */
+/** Marks the current page in the mobile tab bar and the desktop nav. */
 function markActiveTab() {
     const page = window.location.pathname.split('/').pop() || 'index.jsp';
     document.querySelectorAll('.tab-bar-item[data-page]').forEach(item => {
@@ -377,9 +379,69 @@ function markActiveTab() {
         item.classList.toggle('active', active);
         if (active) item.setAttribute('aria-current', 'page');
     });
+    document.querySelectorAll('.site-nav a').forEach(link => {
+        if (link.getAttribute('href').split('/').pop() === page) link.setAttribute('aria-current', 'page');
+    });
 }
 
+/*
+ * Light/dark theme. The inline script in includes/header.jsp applies the theme before first paint; this
+ * keeps the toggle buttons in sync and follows the OS setting until the user picks a theme themselves.
+ * Pages that draw their own colours (charts) can listen for the "karuru:themechange" event.
+ */
+window.KaruruTheme = {
+    storageKey: 'karuru-theme',
+
+    current() {
+        return document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
+    },
+
+    saved() {
+        try { return localStorage.getItem(this.storageKey); } catch (e) { return null; }
+    },
+
+    apply(theme, save) {
+        const root = document.documentElement;
+        root.classList.add('theme-switching');
+        root.setAttribute('data-bs-theme', theme);
+        setTimeout(() => root.classList.remove('theme-switching'), 250);
+        if (save) {
+            try { localStorage.setItem(this.storageKey, theme); } catch (e) { /* private mode: theme still applies */ }
+        }
+        this.syncButtons();
+        document.dispatchEvent(new CustomEvent('karuru:themechange', { detail: { theme } }));
+    },
+
+    toggle() {
+        this.apply(this.current() === 'dark' ? 'light' : 'dark', true);
+    },
+
+    syncButtons() {
+        const dark = this.current() === 'dark';
+        const label = dark ? 'ライトモードに切り替え' : 'ダークモードに切り替え';
+        document.querySelectorAll('[data-theme-toggle]').forEach(button => {
+            button.setAttribute('aria-label', label);
+            button.title = label;
+            const icon = button.querySelector('.bi');
+            if (icon) icon.className = 'bi ' + (dark ? 'bi-sun' : 'bi-moon-stars');
+        });
+    },
+
+    init() {
+        this.syncButtons();
+        document.querySelectorAll('[data-theme-toggle]').forEach(button => {
+            button.addEventListener('click', () => this.toggle());
+        });
+        const media = window.matchMedia('(prefers-color-scheme: dark)');
+        media.addEventListener('change', event => {
+            const saved = this.saved();
+            if (saved !== 'light' && saved !== 'dark') this.apply(event.matches ? 'dark' : 'light', false);
+        });
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+    window.KaruruTheme.init();
     markActiveTab();
     if (window.currentUserId) {
         window.updateAllBadges();

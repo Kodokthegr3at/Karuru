@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="../includes/header.jsp" %>
 
-<main id="main" class="bg-dark text-light py-4">
+<main id="main">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="fw-bold mb-0">
@@ -13,10 +13,10 @@
         </div>
 
         <!-- Banners List -->
-        <div class="card bg-black border-secondary">
+        <div class="card">
             <div class="card-body">
                 <div id="bannersList" class="table-responsive">
-                    <table class="table table-dark table-hover">
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -49,8 +49,8 @@
 <!-- Banner Modal -->
 <div class="modal fade" id="bannerModal" tabindex="-1" aria-labelledby="bannerModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content bg-dark text-light border-secondary">
-            <div class="modal-header border-secondary">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title" id="bannerModalLabel">新規バナー</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -60,18 +60,18 @@
                     
                     <div class="mb-3">
                         <label for="bannerTitle" class="form-label">タイトル <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control bg-black text-light border-secondary" id="bannerTitle" name="title" required>
+                        <input type="text" class="form-control" id="bannerTitle" name="title" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="bannerImageUrl" class="form-label">画像URL <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control bg-black text-light border-secondary" id="bannerImageUrl" name="image_url" required>
+                        <input type="text" class="form-control" id="bannerImageUrl" name="image_url" required>
                         <small class="text-muted">例: /banners/welcome.jpg</small>
                     </div>
                     
                     <div class="mb-3">
                         <label for="bannerLinkUrl" class="form-label">リンクURL</label>
-                        <input type="text" class="form-control bg-black text-light border-secondary" id="bannerLinkUrl" name="link_url" placeholder="${pageContext.request.contextPath}/products.jsp">
+                        <input type="text" class="form-control" id="bannerLinkUrl" name="link_url" placeholder="${pageContext.request.contextPath}/products.jsp">
                         <small class="text-muted d-block mt-1">
                             <strong>例:</strong><br>
                             • コンテキストパスを含む: <code>${pageContext.request.contextPath}/products.jsp</code><br>
@@ -83,7 +83,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="bannerPosition" class="form-label">位置</label>
-                            <select class="form-select bg-black text-light border-secondary" id="bannerPosition" name="position">
+                            <select class="form-select" id="bannerPosition" name="position">
                                 <option value="home_top">ホーム上部</option>
                                 <option value="home_middle">ホーム中央</option>
                                 <option value="category">カテゴリー</option>
@@ -93,19 +93,19 @@
                         
                         <div class="col-md-6 mb-3">
                             <label for="bannerDisplayOrder" class="form-label">表示順</label>
-                            <input type="number" class="form-control bg-black text-light border-secondary" id="bannerDisplayOrder" name="display_order" value="0" min="0">
+                            <input type="number" class="form-control" id="bannerDisplayOrder" name="display_order" value="0" min="0">
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="bannerStartDate" class="form-label">開始日</label>
-                            <input type="datetime-local" class="form-control bg-black text-light border-secondary" id="bannerStartDate" name="start_date">
+                            <input type="datetime-local" class="form-control" id="bannerStartDate" name="start_date">
                         </div>
                         
                         <div class="col-md-6 mb-3">
                             <label for="bannerEndDate" class="form-label">終了日</label>
-                            <input type="datetime-local" class="form-control bg-black text-light border-secondary" id="bannerEndDate" name="end_date">
+                            <input type="datetime-local" class="form-control" id="bannerEndDate" name="end_date">
                         </div>
                     </div>
                     
@@ -117,7 +117,7 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
                 <button type="button" class="btn btn-primary" onclick="saveBanner()">保存</button>
             </div>

@@ -75,6 +75,7 @@ WebSocketManager が接続中の MessageWebSocket / NotificationWebSocket のセ
 - 出品者・購入者のプロフィール、アカウント設定（`SellerProfile`、`Profile`、`Settings`）
 - 管理者ダッシュボード: ユーザー管理、Chart.js による売上分析、バナー管理
 - 簡単な死活監視用のヘルスチェックエンドポイント（`HealthCheckServlet`）
+- ライト／ダークテーマ：ヘッダーのボタンで選ぶまでは OS の設定に従います（選択はブラウザに保存）
 
 ### 5. はじめかた
 

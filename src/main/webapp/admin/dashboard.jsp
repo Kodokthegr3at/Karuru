@@ -94,8 +94,8 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-light table-hover mb-0" id="statisticsTable">
-                                <thead class="table-light">
+                            <table class="table table-hover mb-0" id="statisticsTable">
+                                <thead>
                                     <tr>
                                         <th class="text-center"><i class="bi bi-info-circle me-1"></i>指標</th>
                                         <th class="text-center"><i class="bi bi-123 me-1"></i>値</th>

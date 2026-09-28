@@ -179,7 +179,7 @@
                         <i class="bi bi-cash-stack me-1"></i>代金引換
                     </label>
                 </div>
-                <div class="mt-3 p-2 bg-light rounded">
+                <div class="mt-3 p-2 bg-body-tertiary rounded">
                     <strong>支払い金額:</strong> <span id="paymentRentalAmount" class="text-warning fw-bold">¥0</span>
                 </div>
             </div>

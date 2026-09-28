@@ -5,6 +5,7 @@
     <div class="container">
         <section class="home-intro">
             <h1>あなたの不要なものを、誰かの宝物に。</h1>
+            <p class="home-intro-lead">買う、売る、借りる。身近な中古品をここで。</p>
             <form class="home-search" action="${pageContext.request.contextPath}/products.jsp" role="search">
                 <label class="visually-hidden" for="homeSearch">商品を検索</label>
                 <i class="bi bi-search" aria-hidden="true"></i>

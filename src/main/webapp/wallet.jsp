@@ -11,7 +11,7 @@
                 <div class="card card-light">
                     <div class="card-header card-header-light d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">残高</h5>
-                        <button class="btn btn-sm btn-outline-light" id="refreshBalance" title="更新">
+                        <button class="btn btn-sm btn-outline-secondary" id="refreshBalance" title="更新">
                             <i class="bi bi-arrow-clockwise"></i>
                         </button>
                     </div>
@@ -60,14 +60,14 @@
         <!-- Transaction History -->
         <div class="card card-light">
             <div class="card-header card-header-light">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">取引履歴</h5>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <h5 class="mb-0 text-nowrap">取引履歴</h5>
                     <div class="btn-group wallet-filter-group" role="group">
-                        <button type="button" class="btn btn-sm btn-outline-light active" data-filter="all">すべて</button>
-                        <button type="button" class="btn btn-sm btn-outline-light" data-filter="deposit">入金</button>
-                        <button type="button" class="btn btn-sm btn-outline-light" data-filter="withdrawal">出金</button>
-                        <button type="button" class="btn btn-sm btn-outline-light" data-filter="purchase">購入</button>
-                        <button type="button" class="btn btn-sm btn-outline-light" data-filter="earning">収入</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary active" data-filter="all">すべて</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="deposit">入金</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="withdrawal">出金</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="purchase">購入</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="earning">収入</button>
                     </div>
                 </div>
             </div>
@@ -107,10 +107,10 @@
                     <div class="mb-3">
                         <label>クイック選択</label>
                         <div class="d-grid gap-2 grid-auto-flow-column">
-                            <button type="button" class="btn btn-outline-light btn-sm quick-amount-btn" data-amount="1000">¥1,000</button>
-                            <button type="button" class="btn btn-outline-light btn-sm quick-amount-btn" data-amount="5000">¥5,000</button>
-                            <button type="button" class="btn btn-outline-light btn-sm quick-amount-btn" data-amount="10000">¥10,000</button>
-                            <button type="button" class="btn btn-outline-light btn-sm quick-amount-btn" data-amount="50000">¥50,000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount-btn" data-amount="1000">¥1,000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount-btn" data-amount="5000">¥5,000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount-btn" data-amount="10000">¥10,000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount-btn" data-amount="50000">¥50,000</button>
                         </div>
                     </div>
                     <div class="mb-3">

@@ -75,6 +75,7 @@ Beberapa catatan tentang susunan ini:
 - Profil penjual dan pembeli, pengaturan akun (`SellerProfile`, `Profile`, `Settings`)
 - Dashboard admin: manajemen pengguna, analitik penjualan dengan Chart.js, manajemen banner
 - Endpoint health check (`HealthCheckServlet`) untuk pemantauan dasar
+- Tema terang dan gelap: mengikuti setelan OS sampai pengguna memilih lewat tombol di header (disimpan di browser)
 
 ### 5. Memulai
 

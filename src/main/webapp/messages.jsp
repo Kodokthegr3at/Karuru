@@ -60,7 +60,7 @@
                             <h5 class="mb-0 fw-bold d-flex align-items-center" id="conversationTitle">
                                 <span>会話相手</span>
                             </h5>
-                            <button class="btn btn-sm btn-outline-light rounded-pill d-none d-md-block" onclick="closeConversation()" title="閉じる">
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill d-none d-md-block" onclick="closeConversation()" title="閉じる">
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         </div>

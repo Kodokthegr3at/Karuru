@@ -75,6 +75,7 @@ A couple of notes on this setup:
 - Seller and buyer profiles, account settings (`SellerProfile`, `Profile`, `Settings`)
 - Admin dashboard: user management, sales analytics via Chart.js, banner management
 - A health-check endpoint (`HealthCheckServlet`) for basic liveness monitoring
+- Light and dark theme: follows the OS setting until the user picks one with the header toggle (saved in the browser)
 
 ### 5. Getting Started
 

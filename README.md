@@ -1,3 +1,5 @@
+**Language:** English | [Bahasa Indonesia](README.id.md) | [日本語](README.ja.md)
+
 # Karuru (カルル) — Flea Market Web Application
 
 > A flea-market / classifieds web app built on plain Java EE (`javax.*`) — raw Servlets, JSP, JDBC and WebSockets, no framework, built with Maven.
@@ -136,7 +138,7 @@ Karuru/
 ├── pom.xml, mvnw        … Maven build (+ wrapper)
 ├── .github/workflows/   … CI: build + tests, schema load on MySQL 8.4
 ├── .classpath / .project … Eclipse (m2e + WTP) metadata
-└── README.md
+└── README.md, README.id.md, README.ja.md
 ```
 
 ---

@@ -54,7 +54,7 @@ CATALOG = {
     "electronics": [
         ("iPhone 14 128GB SIMフリー", 62000, 85000, "/img/products/iphone14.jpg", False),
         ("MacBook Air M1 8GB/256GB", 68000, 88000, "/img/products/macbook.jpg", False),
-        ("ソニー WH-1000XM4 ワイヤレスヘッドホン", 17000, 26000, "/images/headphones_1.jpg", True),
+        ("ソニー WH-1000XM4 ワイヤレスヘッドホン", 17000, 26000, "/img/products/headphones.jpg", True),
         ("Canon EOS R6 ボディ", 150000, 210000, "/img/products/camera.jpg", True),
         ("iPad 第9世代 64GB Wi-Fi", 28000, 38000, None, False),
         ("AirPods Pro 第2世代", 18000, 27000, None, False),
@@ -82,7 +82,7 @@ CATALOG = {
         ("無印良品 スタッキングシェルフ", 6000, 14000, None, False),
         ("ニトリ ソファベッド", 12000, 26000, None, False),
         ("カリモク60 Kチェア 1シーター", 38000, 62000, None, False),
-        ("ゲーミングチェア リクライニング", 8000, 18000, "/images/gaming-chair_1.jpg", False),
+        ("ゲーミングチェア リクライニング", 8000, 18000, "/img/products/gaming-chair.jpg", False),
         ("無垢材 ダイニングテーブル 4人用", 18000, 45000, None, False),
         ("フランフラン フロアランプ", 4000, 9000, None, False),
         ("ウォールナット ローテーブル", 7000, 16000, None, False),
@@ -110,7 +110,7 @@ CATALOG = {
         ("レゴ クリエイター エキスパート", 9000, 22000, None, False),
         ("ヤマハ アコースティックギター FG830", 22000, 34000, None, True),
         ("ワンピース フィギュア 一番くじ", 2000, 6000, None, False),
-        ("スプラトゥーン3 Switchソフト", 3800, 5200, "/images/switch_1.jpg", False),
+        ("スプラトゥーン3 Switchソフト", 3800, 5200, "/img/products/splatoon3.jpg", False),
         ("キャンプ用 焚き火台", 4000, 9000, None, True),
     ],
     "sports": [

@@ -66,7 +66,7 @@
                     <div class="mb-3">
                         <label for="bannerImageUrl" class="form-label">画像URL <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="bannerImageUrl" name="image_url" required>
-                        <small class="text-muted">例: /banners/welcome.jpg</small>
+                        <small class="text-muted">例: /img/banners/welcome.jpg</small>
                     </div>
                     
                     <div class="mb-3">

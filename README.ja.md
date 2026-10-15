@@ -138,7 +138,8 @@ Karuru/
 │   ├── *.jsp            … 各ページの JSP ビュー
 │   ├── admin/          … 管理画面
 │   ├── error/           … 404 / 500 エラーページ
-│   ├── img/ images/    … 静的ファイル
+│   ├── css/ js/        … スタイルシートとページ別スクリプト
+│   ├── img/            … 静的画像（バナー・カテゴリ・商品）
 │   └── WEB-INF/web.xml … フィルタとエラーページの設定
 ├── pom.xml, mvnw        … Maven ビルド（+ ラッパー）
 ├── .github/workflows/   … CI: ビルド + テスト、MySQL 8.4 へのスキーマ読み込み

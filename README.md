@@ -138,7 +138,8 @@ Karuru/
 │   ├── *.jsp            … JSP views for each page
 │   ├── admin/          … admin screens
 │   ├── error/           … 404 / 500 error pages
-│   ├── img/ images/    … static assets
+│   ├── css/ js/        … stylesheet and page scripts
+│   ├── img/            … static images (banners, categories, products)
 │   └── WEB-INF/web.xml … filter and error-page configuration
 ├── pom.xml, mvnw        … Maven build (+ wrapper)
 ├── .github/workflows/   … CI: build + tests, schema load on MySQL 8.4

@@ -138,7 +138,8 @@ Karuru/
 │   ├── *.jsp            … view JSP untuk tiap halaman
 │   ├── admin/          … halaman admin
 │   ├── error/           … halaman error 404 / 500
-│   ├── img/ images/    … aset statis
+│   ├── css/ js/        … stylesheet dan script per halaman
+│   ├── img/            … gambar statis (banner, kategori, produk)
 │   └── WEB-INF/web.xml … konfigurasi filter dan halaman error
 ├── pom.xml, mvnw        … build Maven (+ wrapper)
 ├── .github/workflows/   … CI: build + test, load schema ke MySQL 8.4

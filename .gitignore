@@ -2,3 +2,12 @@
 /target/
 src/main/resources/db.properties
 src/main/resources/email.properties
+
+# IDE / OS / tooling junk
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+__pycache__/
+*.log

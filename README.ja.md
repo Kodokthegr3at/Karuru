@@ -126,24 +126,26 @@ python3 db/demo/generate_demo_data.py | mysql -u root -p karuru_db
 ```
 Karuru/
 ├── src/main/java/
-│   ├── servlet/      … 機能ごとの Servlet 34 個 + 抽象基底クラス ApiServlet
-│   ├── dao/          … 共通クエリ（注文、ウォレット、通知など）
-│   ├── websocket/     … メッセージと通知用の WebSocket エンドポイント
-│   └── util/           … DB 接続、パスワードのハッシュ化、フィルタ、メール設定
-├── src/main/resources/
-│   └── db.properties.example, email.properties.example
-├── src/test/java/      … JUnit 5 テスト
-├── db/                 … schema.sql, seed.sql
+│   ├── servlet/          … 機能ごとの Servlet 34 個 + 抽象基底クラス ApiServlet
+│   ├── dao/              … 共通クエリ（注文、ウォレット、通知など）
+│   ├── websocket/        … メッセージと通知用の WebSocket エンドポイント
+│   └── util/             … DB 接続、パスワードのハッシュ化、フィルタ、メール設定
+├── src/main/resources/   … db.properties.example, email.properties.example
+├── src/test/java/        … JUnit 5 テスト
 ├── src/main/webapp/
-│   ├── *.jsp            … 各ページの JSP ビュー
-│   ├── admin/          … 管理画面
-│   ├── error/           … 404 / 500 エラーページ
-│   ├── css/ js/        … スタイルシートとページ別スクリプト
-│   ├── img/            … 静的画像（バナー・カテゴリ・商品）
-│   └── WEB-INF/web.xml … フィルタとエラーページの設定
-├── pom.xml, mvnw        … Maven ビルド（+ ラッパー）
-├── .github/workflows/   … CI: ビルド + テスト、MySQL 8.4 へのスキーマ読み込み
-├── .classpath / .project … Eclipse（m2e + WTP）のメタデータ
+│   ├── *.jsp             … 各ページの JSP ビュー
+│   ├── admin/            … 管理画面
+│   ├── error/            … 404 / 500 エラーページ
+│   ├── includes/         … 共通ヘッダー・フッター・メニュー
+│   ├── css/, js/         … スタイルシートとページ別スクリプト
+│   ├── img/              … 静的画像：banners/, categories/, products/, デフォルト画像, ロゴ
+│   ├── META-INF/         … context.xml（SameSite セッション Cookie）
+│   └── WEB-INF/          … web.xml：フィルタとエラーページの設定
+├── db/                   … schema.sql, seed.sql
+│   └── demo/             … generate_demo_data.py（任意のデモ出品データ）
+├── pom.xml, mvnw         … Maven ビルド（+ ラッパー）
+├── .github/workflows/    … CI: ビルド + テスト、MySQL 8.4 へのスキーマ読み込み
+├── .classpath, .project  … Eclipse（m2e + WTP）のメタデータ
 └── README.md, README.id.md, README.ja.md
 ```
 

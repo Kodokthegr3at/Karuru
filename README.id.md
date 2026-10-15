@@ -126,24 +126,26 @@ python3 db/demo/generate_demo_data.py | mysql -u root -p karuru_db
 ```
 Karuru/
 ├── src/main/java/
-│   ├── servlet/      … 34 servlet per fitur + base class abstrak ApiServlet
-│   ├── dao/          … query bersama (pesanan, dompet, notifikasi, …)
-│   ├── websocket/     … endpoint WebSocket untuk pesan & notifikasi
-│   └── util/           … koneksi DB, hashing password, filter, konfigurasi email
-├── src/main/resources/
-│   └── db.properties.example, email.properties.example
-├── src/test/java/      … test JUnit 5
-├── db/                 … schema.sql, seed.sql
+│   ├── servlet/          … 34 servlet per fitur + base class abstrak ApiServlet
+│   ├── dao/              … query bersama (pesanan, dompet, notifikasi, …)
+│   ├── websocket/        … endpoint WebSocket untuk pesan & notifikasi
+│   └── util/             … koneksi DB, hashing password, filter, konfigurasi email
+├── src/main/resources/   … db.properties.example, email.properties.example
+├── src/test/java/        … test JUnit 5
 ├── src/main/webapp/
-│   ├── *.jsp            … view JSP untuk tiap halaman
-│   ├── admin/          … halaman admin
-│   ├── error/           … halaman error 404 / 500
-│   ├── css/ js/        … stylesheet dan script per halaman
-│   ├── img/            … gambar statis (banner, kategori, produk)
-│   └── WEB-INF/web.xml … konfigurasi filter dan halaman error
-├── pom.xml, mvnw        … build Maven (+ wrapper)
-├── .github/workflows/   … CI: build + test, load schema ke MySQL 8.4
-├── .classpath / .project … metadata Eclipse (m2e + WTP)
+│   ├── *.jsp             … view JSP untuk tiap halaman
+│   ├── admin/            … halaman admin
+│   ├── error/            … halaman error 404 / 500
+│   ├── includes/         … header, footer, dan menu bersama
+│   ├── css/, js/         … stylesheet dan script per halaman
+│   ├── img/              … gambar statis: banners/, categories/, products/, default, logo
+│   ├── META-INF/         … context.xml (cookie sesi SameSite)
+│   └── WEB-INF/          … web.xml: konfigurasi filter dan halaman error
+├── db/                   … schema.sql, seed.sql
+│   └── demo/             … generate_demo_data.py (listing demo opsional)
+├── pom.xml, mvnw         … build Maven (+ wrapper)
+├── .github/workflows/    … CI: build + test, load schema ke MySQL 8.4
+├── .classpath, .project  … metadata Eclipse (m2e + WTP)
 └── README.md, README.id.md, README.ja.md
 ```
 

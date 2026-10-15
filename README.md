@@ -126,24 +126,26 @@ python3 db/demo/generate_demo_data.py | mysql -u root -p karuru_db
 ```
 Karuru/
 ├── src/main/java/
-│   ├── servlet/      … 34 feature-specific servlets + abstract ApiServlet base
-│   ├── dao/          … shared queries (orders, wallets, notifications, …)
-│   ├── websocket/     … WebSocket endpoints for messaging & notifications
-│   └── util/           … DB connection, password hashing, filters, email config
-├── src/main/resources/
-│   └── db.properties.example, email.properties.example
-├── src/test/java/      … JUnit 5 tests
-├── db/                 … schema.sql, seed.sql
+│   ├── servlet/          … 34 feature-specific servlets + abstract ApiServlet base
+│   ├── dao/              … shared queries (orders, wallets, notifications, …)
+│   ├── websocket/        … WebSocket endpoints for messaging & notifications
+│   └── util/             … DB connection, password hashing, filters, email config
+├── src/main/resources/   … db.properties.example, email.properties.example
+├── src/test/java/        … JUnit 5 tests
 ├── src/main/webapp/
-│   ├── *.jsp            … JSP views for each page
-│   ├── admin/          … admin screens
-│   ├── error/           … 404 / 500 error pages
-│   ├── css/ js/        … stylesheet and page scripts
-│   ├── img/            … static images (banners, categories, products)
-│   └── WEB-INF/web.xml … filter and error-page configuration
-├── pom.xml, mvnw        … Maven build (+ wrapper)
-├── .github/workflows/   … CI: build + tests, schema load on MySQL 8.4
-├── .classpath / .project … Eclipse (m2e + WTP) metadata
+│   ├── *.jsp             … JSP views for each page
+│   ├── admin/            … admin screens
+│   ├── error/            … 404 / 500 error pages
+│   ├── includes/         … shared header, footer and menus
+│   ├── css/, js/         … stylesheet and page scripts
+│   ├── img/              … static images: banners/, categories/, products/, defaults, logo
+│   ├── META-INF/         … context.xml (SameSite session cookie)
+│   └── WEB-INF/          … web.xml: filter and error-page configuration
+├── db/                   … schema.sql, seed.sql
+│   └── demo/             … generate_demo_data.py (optional demo listings)
+├── pom.xml, mvnw         … Maven build (+ wrapper)
+├── .github/workflows/    … CI: build + tests, schema load on MySQL 8.4
+├── .classpath, .project  … Eclipse (m2e + WTP) metadata
 └── README.md, README.id.md, README.ja.md
 ```
 
